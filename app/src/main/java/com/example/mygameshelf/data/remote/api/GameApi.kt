@@ -1,18 +1,15 @@
 package com.example.mygameshelf.data.remote.api
 
-import com.example.mygameshelf.data.remote.model.AuthResponseDTO
+import com.example.mygameshelf.data.remote.model.GameBriefDTO
+import com.example.mygameshelf.domain.model.GameBrief
+import okhttp3.RequestBody
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.POST
-import retrofit2.http.Query
 
 interface GameApi {
 
-//    @GET("tasks")
-//    suspend fun getTasks(): List<Task>
-//
-//    @POST("task")
-//    suspend fun addTask(@Body task: Task): Response<Task>
-//
-//    @DELETE("tasks/{id}")
-//    suspend fun deleteTask(@Path("id") taskId: String): Response<Unit>
+    @POST("games")
+    suspend fun games(@Body rawQuery: RequestBody): Response<List<GameBriefDTO>>
+
 }

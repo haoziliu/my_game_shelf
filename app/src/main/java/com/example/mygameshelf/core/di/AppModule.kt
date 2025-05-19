@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
+import com.example.mygameshelf.core.network.TokenProvider
 import com.example.mygameshelf.data.GameRepositoryImpl
 import com.example.mygameshelf.data.TokenRepositoryImpl
 import com.example.mygameshelf.data.local.TokenStore
@@ -54,5 +55,11 @@ object AppModule {
         return PreferenceDataStoreFactory.create {
             context.preferencesDataStoreFile("auth_token_prefs")
         }
+    }
+
+    @Provides
+    @Singleton
+    fun provideTokenProvider(authApi: AuthApi, tokenStore: TokenStore): TokenProvider {
+        return TokenRepositoryImpl(authApi, tokenStore)
     }
 }

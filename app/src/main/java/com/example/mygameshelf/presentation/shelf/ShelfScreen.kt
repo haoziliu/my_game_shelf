@@ -37,14 +37,14 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel()) {
 
     Column(modifier = Modifier.fillMaxWidth()) {
         LazyRow {
-            items(wantToPlayGames) { game ->
+            items(wantToPlayGames, key = { it.id }) { game ->
                 GameItem(game = game, onLongPressed = {
                     viewModel.deleteGame(game)
                 })
             }
         }
         LazyRow {
-            items(completedGames) { game ->
+            items(completedGames, key = { it.id }) { game ->
                 GameItem(game = game, onLongPressed = {
                     viewModel.deleteGame(game)
                 })

@@ -1,5 +1,7 @@
 package com.example.mygameshelf.core.di
 
+import android.util.Log
+import com.example.mygameshelf.BuildConfig
 import com.example.mygameshelf.core.network.AuthInterceptor
 import com.example.mygameshelf.data.remote.api.AuthApi
 import com.example.mygameshelf.data.remote.api.GameApi
@@ -24,8 +26,18 @@ object NetworkModule {
     @Named("AuthRetrofit")
     fun provideAuthRetrofit(): Retrofit =
         Retrofit.Builder()
-            .baseUrl("https://id.twitch.tv/oauth2/")
+            .baseUrl("https://id.twitch.tv/")
             .addConverterFactory(GsonConverterFactory.create())
+            .client(
+                OkHttpClient.Builder()
+                    .addInterceptor(HttpLoggingInterceptor { message ->
+                        Log.d("TWITCH-HTTP", message)
+                    }.apply {
+                        level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
+                        else HttpLoggingInterceptor.Level.NONE
+                    })
+                    .build()
+            )
             .build()
 
 
@@ -34,17 +46,20 @@ object NetworkModule {
     @Named("ApiRetrofit")
     fun provideRetrofit(authInterceptor: AuthInterceptor): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://api.igdb.com/v4")
+            .baseUrl("https://api.igdb.com/v4/")
             .addConverterFactory(GsonConverterFactory.create())
             .client(
                 OkHttpClient.Builder()
                     .addInterceptor(authInterceptor)
-                    .addInterceptor(HttpLoggingInterceptor().apply {
-                        level = HttpLoggingInterceptor.Level.BODY
+                    .addInterceptor(HttpLoggingInterceptor { message ->
+                        Log.d("IGDB-HTTP", message)
+                    }.apply {
+                        level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
+                        else HttpLoggingInterceptor.Level.NONE
                     })
                     .addInterceptor(Interceptor { chain: Interceptor.Chain ->
                         val request = chain.request().newBuilder()
-                            .addHeader("Client-ID", "BuildConfig.TWITCH_CLIENT_ID")
+                            .addHeader("Client-ID", BuildConfig.TWITCH_CLIENT_ID)
                             .build()
                         chain.proceed(request)
                     })

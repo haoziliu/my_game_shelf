@@ -1,5 +1,6 @@
 package com.example.mygameshelf.data
 
+import com.example.mygameshelf.BuildConfig
 import com.example.mygameshelf.core.network.TokenProvider
 import com.example.mygameshelf.data.local.TokenStore
 import com.example.mygameshelf.data.remote.api.AuthApi
@@ -14,8 +15,8 @@ class TokenRepositoryImpl @Inject constructor(
     override suspend fun getValidToken(): String {
         if (tokenStore.isTokenExpired()) {
             val response = authApi.auth(
-                clientId = "BuildConfig.TWITCH_CLIENT_ID",
-                clientSecret = "BuildConfig.TWITCH_CLIENT_SECRET"
+                clientId = BuildConfig.TWITCH_CLIENT_ID,
+                clientSecret = BuildConfig.TWITCH_CLIENT_SECRET
             )
             if (!response.isSuccessful) {
                 throw Exception("Token fetch failed: ${response.code()}")

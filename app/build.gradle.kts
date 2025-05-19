@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -20,10 +22,13 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val twitchClientId: String by project
-        val twitchClientSecret: String by project
-        buildConfigField("String", "TWITCH_CLIENT_ID", "\"twitchClientId\"")
-        buildConfigField("String", "TWITCH_CLIENT_SECRET", "\"twitchClientSecret\"")
+        val localProperties = File(rootDir, "local.properties")
+            .inputStream()
+            .use { Properties().apply { load(it) } }
+        val twitchClientId = localProperties.getProperty("twitchClientId") ?: ""
+        val twitchClientSecret = localProperties.getProperty("twitchClientSecret") ?: ""
+        buildConfigField("String", "TWITCH_CLIENT_ID", "\"$twitchClientId\"")
+        buildConfigField("String", "TWITCH_CLIENT_SECRET", "\"$twitchClientSecret\"")
     }
 
     buildTypes {

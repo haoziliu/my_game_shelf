@@ -7,7 +7,7 @@ import retrofit2.http.Query
 
 interface AuthApi {
 
-    @POST("/token")
+    @POST("oauth2/token")
     suspend fun auth(
         @Query("client_id") clientId: String,
         @Query("client_secret") clientSecret: String,
