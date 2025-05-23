@@ -23,7 +23,7 @@ fun NetworkImage(
     AsyncImage(
         model = imageModel,
         contentDescription = contentDescription,
-        modifier = modifier.clip(RoundedCornerShape(8.dp)), // ✅ 设置裁剪圆角
+        modifier = modifier.clip(RoundedCornerShape(4.dp)), // ✅ 设置裁剪圆角
         contentScale = contentScale,
 //        placeholder = placeholder ?: painterResource(R.drawable.placeholder), // ✅ 占位图
 //        error = error ?: painterResource(R.drawable.error_placeholder) // ✅ 错误图

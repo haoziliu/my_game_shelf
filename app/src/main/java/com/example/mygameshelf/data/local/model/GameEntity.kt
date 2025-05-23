@@ -19,7 +19,8 @@ data class GameEntity(
     val genre: String?,
     val status: GameStatus,
     val rating: Float?,
-    var lastEdit: LocalDate,
+    var lastEdit: LocalDate?,
+    var imageId: String?
 )
 
 fun GameEntity.toDomainModel(): Game {
@@ -30,12 +31,13 @@ fun GameEntity.toDomainModel(): Game {
         platform = platform,
         genre = genre,
         status = status,
-        rating = rating,
-        lastEdit = lastEdit
+        myRating = rating,
+        lastEdit = lastEdit,
+        imageId = imageId,
     )
 }
 
-fun Game.toEntity() : GameEntity {
+fun Game.toEntity(): GameEntity {
     return GameEntity(
         id = id,
         title = title,
@@ -43,7 +45,8 @@ fun Game.toEntity() : GameEntity {
         platform = platform,
         genre = genre,
         status = status,
-        rating = rating,
-        lastEdit = lastEdit
+        rating = myRating,
+        lastEdit = lastEdit,
+        imageId = imageId,
     )
 }

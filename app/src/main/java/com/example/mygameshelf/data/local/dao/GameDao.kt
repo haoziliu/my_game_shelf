@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 @RewriteQueriesToDropUnusedColumns
 interface GameDao {
     @Query("SELECT * FROM games WHERE status = :gameStatus ORDER BY lastEdit DESC")
-    fun getGames(gameStatus: GameStatus): Flow<List<GameEntity>>
+    fun observeGames(gameStatus: GameStatus): Flow<List<GameEntity>>
 
     @Upsert
     suspend fun upsertGame(game: GameEntity)
@@ -23,4 +23,16 @@ interface GameDao {
 
     @Query("DELETE FROM games WHERE id = :id")
     suspend fun deleteGameById(id: Long)
+
+    @Query("SELECT * FROM games WHERE id = :id")
+    suspend fun getGameById(id: Long): GameEntity?
+
+    @Query("SELECT * FROM games WHERE id = :id")
+    fun observeGameById(id: Long): Flow<GameEntity?>
+
+    @Query("SELECT * FROM games WHERE igdbId = :igdbId")
+    fun getGameByIgdbId(igdbId: Long): GameEntity?
+
+    @Query("SELECT * FROM games WHERE igdbId = :igdbId")
+    fun observeGameByIgdbId(igdbId: Long): Flow<GameEntity?>
 }

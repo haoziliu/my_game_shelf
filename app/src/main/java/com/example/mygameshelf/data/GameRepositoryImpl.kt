@@ -6,11 +6,9 @@ import com.example.mygameshelf.data.local.model.toEntity
 import com.example.mygameshelf.data.remote.api.GameApi
 import com.example.mygameshelf.data.remote.model.toDomainModel
 import com.example.mygameshelf.domain.model.Game
-import com.example.mygameshelf.domain.model.GameBrief
 import com.example.mygameshelf.domain.model.GameStatus
 import com.example.mygameshelf.domain.repository.GameRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -22,27 +20,50 @@ class GameRepositoryImpl @Inject constructor(
     private val gameApi: GameApi
 ) : GameRepository {
 
-    override fun getLocalGames(gameStatus: GameStatus): Flow<List<Game>> {
-        return gameDao.getGames(gameStatus)
+    override fun observeLocalGamesByStatus(gameStatus: GameStatus): Flow<List<Game>> {
+        return gameDao.observeGames(gameStatus)
             .map { entities -> entities.map { it.toDomainModel() } }
     }
 
-    override suspend fun upsertGame(game: Game) {
+    override suspend fun saveGame(game: Game) =
         gameDao.upsertGame(game.toEntity())
-    }
 
-    override suspend fun deleteGame(id: Long) {
+    override suspend fun deleteGame(id: Long) =
         gameDao.deleteGameById(id)
-    }
 
-    override suspend fun searchGames(searchText: String): Flow<List<GameBrief>> = flow {
-        val rawQuery = "fields name,cover.image_id; limit 10; where name ~ *\"$searchText\"*;"
+    override suspend fun getLocalGameById(id: Long) =
+        gameDao.getGameById(id)?.toDomainModel()
+
+    override suspend fun getLocalGameByIgdbId(igdbId: Long) =
+        gameDao.getGameByIgdbId(igdbId)?.toDomainModel()
+
+    override fun observeLocalGameById(id: Long): Flow<Game?> =
+        gameDao.observeGameById(id).map { it?.toDomainModel() }
+
+    override fun observeLocalGameByIgdbId(igdbId: Long): Flow<Game?> =
+        gameDao.observeGameByIgdbId(igdbId).map { it?.toDomainModel() }
+
+    override suspend fun searchRemoteGames(searchText: String): List<Game> {
+        val rawQuery = "fields name,cover.image_id; limit 10; search \"$searchText\";"
         val response = gameApi.games(
             rawQuery.toRequestBody("text/plain".toMediaType())
         )
         if (response.isSuccessful) {
             val dtoList = response.body() ?: emptyList()
-            emit(dtoList.map { it.toDomainModel() })
+            return dtoList.map { it.toDomainModel() }
+        } else {
+            throw IOException("Error fetching games: ${response.code()}")
+        }
+    }
+
+    override suspend fun fetchGameFromRemote(igdbId: Long): Game {
+        val rawQuery = "fields name,rating,cover.image_id,storyline,summary; limit 1; where id = $igdbId;"
+        val response = gameApi.games(
+            rawQuery.toRequestBody("text/plain".toMediaType())
+        )
+        if (response.isSuccessful) {
+            val dtoList = response.body() ?: emptyList()
+            return dtoList[0].toDomainModel()
         } else {
             throw IOException("Error fetching games: ${response.code()}")
         }

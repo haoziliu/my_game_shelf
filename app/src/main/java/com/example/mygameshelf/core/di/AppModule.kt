@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
+import androidx.room.migration.Migration
 import com.example.mygameshelf.core.network.TokenProvider
 import com.example.mygameshelf.data.GameRepositoryImpl
 import com.example.mygameshelf.data.TokenRepositoryImpl
@@ -29,7 +30,8 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(context, AppDatabase::class.java, "game_shelf_db").build()
+        return Room.databaseBuilder(context, AppDatabase::class.java, "game_shelf_db")
+            .addMigrations().build()
     }
 
     @Provides
