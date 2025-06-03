@@ -1,6 +1,5 @@
 package com.example.mygameshelf.presentation.gamedetail
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,6 +14,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -28,30 +28,33 @@ class GameDetailViewModel @Inject constructor(
     private val saveGameUseCase: SaveGameUseCase,
 ) : ViewModel() {
     private val igdbId: Long = checkNotNull(savedStateHandle.get<String>("igdbId")).toLong()
-    val game = observeLocalGameUseCase.byIgdbId(igdbId)
+    val localGame = observeLocalGameUseCase.byIgdbId(igdbId)
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
     private val _gameDetail = MutableStateFlow<Game?>(null)
     val gameDetail = _gameDetail.asStateFlow()
     private val _hasUnsavedChanges = MutableStateFlow(false)
     val hasUnsavedChanges = _hasUnsavedChanges.asStateFlow()
-    private val _editRating = MutableStateFlow<Float?>(null)
-    val editRating = _editRating.asStateFlow()
+    private val _editMyRating = MutableStateFlow<Float?>(null)
+    val editMyRating = _editMyRating.asStateFlow()
     private val _editStatus = MutableStateFlow<GameStatus?>(null)
     val editStatus = _editStatus.asStateFlow()
 
     init {
-        // Wait for the first non-null game, then seed the edit buffers
         viewModelScope.launch {
-//            game.filterNotNull().first().let { g ->
-//                _editRating.value = g.myRating
-//                _editStatus.value = g.status
-//            }
+            localGame.filterNotNull().first().let { g ->
+                _editMyRating.value = g.myRating
+                _editStatus.value = g.status
+                _gameDetail.value?.myRating = g.myRating
+                _gameDetail.value?.status = g.status
+            }
+        }
+        viewModelScope.launch {
             _gameDetail.value = fetchRemoteGameUseCase(igdbId)
         }
     }
 
     fun setRating(r: Float) {
-        _editRating.value = r
+        _editMyRating.value = r
         _hasUnsavedChanges.value = true
     }
 
@@ -61,9 +64,9 @@ class GameDetailViewModel @Inject constructor(
     }
 
     fun saveChanges() {
-        val current = game.value ?: return
-        val newRating = editRating.value ?: current.myRating
-        val newStatus = editStatus.value ?: current.status
+        val current = localGame.value ?: return
+        val newRating = _editMyRating.value ?: current.myRating
+        val newStatus = _editStatus.value ?: current.status
 
         val updated = current.copy(
             myRating = newRating,
@@ -78,8 +81,8 @@ class GameDetailViewModel @Inject constructor(
     }
 
     fun resetEdits() {
-        game.value?.let { g ->
-            _editRating.value = g.myRating
+        localGame.value?.let { g ->
+            _editMyRating.value = g.myRating
             _editStatus.value = g.status
         }
         _hasUnsavedChanges.value = false

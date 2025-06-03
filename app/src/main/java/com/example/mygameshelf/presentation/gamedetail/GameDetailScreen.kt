@@ -1,6 +1,7 @@
 package com.example.mygameshelf.presentation.gamedetail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -39,18 +41,22 @@ import com.example.mygameshelf.presentation.common.StarRatingBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameDetailScreen(viewModel: GameDetailViewModel) {
-    val game by viewModel.game.collectAsStateWithLifecycle()
+//    val localGame by viewModel.localGame.collectAsStateWithLifecycle()
     val gameDetail by viewModel.gameDetail.collectAsStateWithLifecycle()
     val hasUnsavedChanges by viewModel.hasUnsavedChanges.collectAsStateWithLifecycle()
     var showEdit by remember { mutableStateOf(false) }
     var showDiscardDialog by remember { mutableStateOf(false) }
+//    val editStatus by viewModel.editStatus.collectAsStateWithLifecycle()
+//    val editRating by viewModel.editMyRating.collectAsStateWithLifecycle()
 
-    gameDetail?.let {
-        GameDetail(it, {
+    gameDetail?.let { game ->
+        GameDetail(game, onClickEdit = {
             showEdit = true
         })
     } ?: run {
-        CircularProgressIndicator()
+        Box(Modifier.fillMaxSize()) {
+            CircularProgressIndicator(Modifier.align(Alignment.Center))
+        }
     }
 
     if (showEdit) {
@@ -64,7 +70,7 @@ fun GameDetailScreen(viewModel: GameDetailViewModel) {
             }
         )
 
-        ModalBottomSheet(onDismissRequest = {
+        ModalBottomSheet(sheetState = sheetState, onDismissRequest = {
             if (!hasChanges) showEdit = false
         }) {
             Row(
@@ -82,7 +88,15 @@ fun GameDetailScreen(viewModel: GameDetailViewModel) {
                     viewModel.saveChanges()
                     showEdit = false
                 }) { Text("Save") }
+
+                StarRatingBar(
+                    rating = gameDetail!!.myRating ?: 0.0f,
+                    starSize = 20.dp,
+                    onRatingChanged = { newRating ->
+                        viewModel.setRating(newRating)
+                    })
             }
+
         }
     }
 
@@ -109,10 +123,15 @@ fun GameDetailScreen(viewModel: GameDetailViewModel) {
 @Preview(showBackground = true)
 fun GameDetail(
     @PreviewParameter(GamePreviewParameterProvider::class) game: Game,
-    onClickEdit: () -> Unit = {}
+    onClickEdit: () -> Unit = {},
 ) {
     val scrollState = rememberScrollState()
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(scrollState)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(scrollState)
+    ) {
         Row {
             NetworkImage(
                 url = game.coverBigUrl ?: "",
@@ -133,15 +152,18 @@ fun GameDetail(
 
         Row(modifier = Modifier.fillMaxWidth()) {
             Text("My rating:")
-            StarRatingBar(rating = game.myRating ?: 0.0f, starSize = 20.dp)
+            StarRatingBar(
+                rating = game.myRating ?: 0.0f,
+                starSize = 20.dp
+            )
             Spacer(Modifier.weight(1f))
-            TextButton(content = { game.status?.name ?: "Want to play" }, onClick = onClickEdit)
+            TextButton(content = { game.status.name }, onClick = onClickEdit)
         }
 
         game.rating?.let {
             Spacer(Modifier.size(16.dp))
             Text("IGDB rating: $it / 100")
-            StarRatingBar(rating = it / 20.0f, starSize = 20.dp)
+            StarRatingBar(rating = it / 100.0f, starSize = 20.dp)
         }
 
         Spacer(Modifier.size(16.dp))
