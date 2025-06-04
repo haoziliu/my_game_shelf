@@ -24,6 +24,8 @@ class ShelfViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val completedGames = observeLocalGamesUseCase(GameStatus.COMPLETED)
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    val otherGames = observeLocalGamesUseCase(GameStatus.UNKNOWN)
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     fun addGame(game: Game) {
         viewModelScope.launch {

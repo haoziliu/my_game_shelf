@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,8 +47,15 @@ fun GameDetailScreen(viewModel: GameDetailViewModel) {
     val hasUnsavedChanges by viewModel.hasUnsavedChanges.collectAsStateWithLifecycle()
     var showEdit by remember { mutableStateOf(false) }
     var showDiscardDialog by remember { mutableStateOf(false) }
-//    val editStatus by viewModel.editStatus.collectAsStateWithLifecycle()
-//    val editRating by viewModel.editMyRating.collectAsStateWithLifecycle()
+    val editStatus by viewModel.editStatus.collectAsStateWithLifecycle()
+    val editRating by viewModel.editMyRating.collectAsStateWithLifecycle()
+    val hasChangesState by rememberUpdatedState(viewModel.hasUnsavedChanges.collectAsState().value)
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        confirmValueChange = { newValue: SheetValue ->
+            newValue != SheetValue.Hidden || !hasChangesState
+        }
+    )
 
     gameDetail?.let { game ->
         GameDetail(game, onClickEdit = {
@@ -60,19 +68,18 @@ fun GameDetailScreen(viewModel: GameDetailViewModel) {
     }
 
     if (showEdit) {
-        val hasChanges = viewModel.hasUnsavedChanges.collectAsState().value
-
-        val sheetState = rememberModalBottomSheetState(
-            skipPartiallyExpanded = true,
-            confirmValueChange = { newState ->
-                // disable dismiss by swipe when there are unsaved changes
-                newState != SheetValue.Hidden || !hasChanges
-            }
-        )
-
         ModalBottomSheet(sheetState = sheetState, onDismissRequest = {
-            if (!hasChanges) showEdit = false
+            if (!hasChangesState) showEdit = false
+            else showDiscardDialog = true
         }) {
+            StarRatingBar(
+                modifier = Modifier.padding(16.dp),
+                rating = editRating ?: 0.0f,
+                starSize = 40.dp,
+                onRatingChanged = { newRating ->
+                    viewModel.setRating(newRating)
+                })
+
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -80,7 +87,7 @@ fun GameDetailScreen(viewModel: GameDetailViewModel) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 TextButton(onClick = {
-                    if (!hasChanges) showEdit = false
+                    if (!hasChangesState) showEdit = false
                     else showDiscardDialog = true
                 }) { Text("Cancel") }
 
@@ -88,13 +95,6 @@ fun GameDetailScreen(viewModel: GameDetailViewModel) {
                     viewModel.saveChanges()
                     showEdit = false
                 }) { Text("Save") }
-
-                StarRatingBar(
-                    rating = gameDetail!!.myRating ?: 0.0f,
-                    starSize = 20.dp,
-                    onRatingChanged = { newRating ->
-                        viewModel.setRating(newRating)
-                    })
             }
 
         }
@@ -111,7 +111,9 @@ fun GameDetailScreen(viewModel: GameDetailViewModel) {
                 }) { Text("Discard") }
             },
             dismissButton = {
-                TextButton(onClick = { showDiscardDialog = false }) { Text("Keep Editing") }
+                TextButton(onClick = {
+                    showDiscardDialog = false
+                }) { Text("Keep editing") }
             },
             text = { Text("Discard your changes?") }
         )
@@ -157,7 +159,7 @@ fun GameDetail(
                 starSize = 20.dp
             )
             Spacer(Modifier.weight(1f))
-            TextButton(content = { game.status.name }, onClick = onClickEdit)
+            TextButton(content = { Text(game.status.name) }, onClick = onClickEdit)
         }
 
         game.rating?.let {

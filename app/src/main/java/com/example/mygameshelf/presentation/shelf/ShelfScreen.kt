@@ -33,6 +33,7 @@ import androidx.navigation.NavController
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.presentation.addgame.AddGameScreen
 import com.example.mygameshelf.presentation.common.GamePreviewParameterProvider
+import com.example.mygameshelf.presentation.common.NetworkImage
 import com.example.mygameshelf.presentation.common.StarRatingBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +41,7 @@ import com.example.mygameshelf.presentation.common.StarRatingBar
 fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavController) {
     val completedGames by viewModel.completedGames.collectAsStateWithLifecycle()
     val wantToPlayGames by viewModel.wantToPlayGames.collectAsStateWithLifecycle()
+    val otherGames by viewModel.otherGames.collectAsStateWithLifecycle()
     var showAddGame by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -53,6 +55,13 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
         }
         LazyRow {
             items(completedGames, key = { it.id }) { game ->
+                GameItem(game = game, onLongPressed = {
+                    viewModel.deleteGame(game)
+                })
+            }
+        }
+        LazyRow {
+            items(otherGames, key = { it.id }) { game ->
                 GameItem(game = game, onLongPressed = {
                     viewModel.deleteGame(game)
                 })
@@ -97,7 +106,7 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
             sheetState = sheetState,
         ) {
             AddGameScreen(onGameClick = { igdbId ->
-                showAddGame = false
+//                showAddGame = false
                 navController.navigate("gameDetail/$igdbId")
             })
         }
@@ -124,9 +133,10 @@ fun GameItem(
                 onLongPress = onLongPressed
             )
         }) {
-        Box(modifier = Modifier.size(width = 64.dp, height = 96.dp)) {
-
-        }
+        NetworkImage(
+            url = game.coverBigUrl ?: "",
+            modifier = Modifier.size(width = 90.dp, height = 120.dp)
+        )
         Text(
             text = game.title,
             fontSize = 12.sp,

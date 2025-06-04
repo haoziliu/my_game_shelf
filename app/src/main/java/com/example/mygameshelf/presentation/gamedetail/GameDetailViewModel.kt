@@ -29,7 +29,7 @@ class GameDetailViewModel @Inject constructor(
 ) : ViewModel() {
     private val igdbId: Long = checkNotNull(savedStateHandle.get<String>("igdbId")).toLong()
     val localGame = observeLocalGameUseCase.byIgdbId(igdbId)
-        .stateIn(viewModelScope, SharingStarted.Lazily, null)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(1_000), null)
     private val _gameDetail = MutableStateFlow<Game?>(null)
     val gameDetail = _gameDetail.asStateFlow()
     private val _hasUnsavedChanges = MutableStateFlow(false)
@@ -41,15 +41,13 @@ class GameDetailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            _gameDetail.value = fetchRemoteGameUseCase(igdbId)
             localGame.filterNotNull().first().let { g ->
-                _editMyRating.value = g.myRating
+                _editMyRating.value = g.myRating ?: 0.0f
                 _editStatus.value = g.status
                 _gameDetail.value?.myRating = g.myRating
                 _gameDetail.value?.status = g.status
             }
-        }
-        viewModelScope.launch {
-            _gameDetail.value = fetchRemoteGameUseCase(igdbId)
         }
     }
 
@@ -64,7 +62,11 @@ class GameDetailViewModel @Inject constructor(
     }
 
     fun saveChanges() {
-        val current = localGame.value ?: return
+        val current = localGame.value ?: Game(
+            igdbId = igdbId,
+            title = _gameDetail.value?.title ?: "",
+            imageId = _gameDetail.value?.imageId
+        )
         val newRating = _editMyRating.value ?: current.myRating
         val newStatus = _editStatus.value ?: current.status
 
@@ -73,7 +75,6 @@ class GameDetailViewModel @Inject constructor(
             status = newStatus,
             lastEdit = LocalDate.now()
         )
-
         viewModelScope.launch {
             saveGameUseCase(updated)
             _hasUnsavedChanges.value = false
@@ -81,10 +82,8 @@ class GameDetailViewModel @Inject constructor(
     }
 
     fun resetEdits() {
-        localGame.value?.let { g ->
-            _editMyRating.value = g.myRating
-            _editStatus.value = g.status
-        }
+        _editMyRating.value = localGame.value?.myRating ?: 0.0f
+        _editStatus.value = localGame.value?.status ?: GameStatus.UNKNOWN
         _hasUnsavedChanges.value = false
     }
 
