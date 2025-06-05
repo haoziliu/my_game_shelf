@@ -5,5 +5,5 @@ import com.example.mygameshelf.domain.repository.GameRepository
 import javax.inject.Inject
 
 class ObserveLocalGamesUseCase @Inject constructor(private val repository: GameRepository) {
-    operator fun invoke(gameStatus: GameStatus) = repository.observeLocalGamesByStatus(gameStatus)
+    operator fun invoke(vararg gameStatus: GameStatus) = repository.observeLocalGamesByStatus(*gameStatus)
 }

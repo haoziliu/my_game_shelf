@@ -12,8 +12,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 @RewriteQueriesToDropUnusedColumns
 interface GameDao {
-    @Query("SELECT * FROM games WHERE status = :gameStatus ORDER BY lastEdit DESC")
-    fun observeGames(gameStatus: GameStatus): Flow<List<GameEntity>>
+//    @Query("SELECT * FROM games WHERE status = :gameStatus ORDER BY lastEdit DESC")
+//    fun observeGames(gameStatus: GameStatus): Flow<List<GameEntity>>
+
+    @Query("SELECT * FROM games WHERE status IN (:gameStatus) ORDER BY lastEdit DESC")
+    fun observeGames(vararg gameStatus: GameStatus): Flow<List<GameEntity>>
 
     @Upsert
     suspend fun upsertGame(game: GameEntity)

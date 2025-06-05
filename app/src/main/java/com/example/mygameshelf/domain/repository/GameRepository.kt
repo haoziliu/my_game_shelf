@@ -5,7 +5,7 @@ import com.example.mygameshelf.domain.model.GameStatus
 import kotlinx.coroutines.flow.Flow
 
 interface GameRepository {
-    fun observeLocalGamesByStatus(gameStatus: GameStatus): Flow<List<Game>>
+    fun observeLocalGamesByStatus(vararg gameStatus: GameStatus): Flow<List<Game>>
     suspend fun saveGame(game: Game)
     suspend fun deleteGame(id: Long)
     suspend fun getLocalGameById(id: Long): Game?

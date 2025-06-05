@@ -1,12 +1,12 @@
 package com.example.mygameshelf.presentation.shelf
 
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -21,8 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
@@ -39,32 +40,32 @@ import com.example.mygameshelf.presentation.common.StarRatingBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavController) {
-    val completedGames by viewModel.completedGames.collectAsStateWithLifecycle()
     val wantToPlayGames by viewModel.wantToPlayGames.collectAsStateWithLifecycle()
+    val playingGames by viewModel.playingGames.collectAsStateWithLifecycle()
     val otherGames by viewModel.otherGames.collectAsStateWithLifecycle()
     var showAddGame by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val onClickGame: (Game) -> Unit = { game ->
+        navController.navigate("gameDetail/${game.igdbId}")
+    }
+    val onLongPressedGame: (Game) -> Unit = { game ->
+        viewModel.deleteGame(game)
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         LazyRow {
             items(wantToPlayGames, key = { it.id }) { game ->
-                GameItem(game = game, onLongPressed = {
-                    viewModel.deleteGame(game)
-                })
+                GameItem(game = game, onLongPressed = onLongPressedGame, onClick = onClickGame)
             }
         }
         LazyRow {
-            items(completedGames, key = { it.id }) { game ->
-                GameItem(game = game, onLongPressed = {
-                    viewModel.deleteGame(game)
-                })
+            items(playingGames, key = { it.id }) { game ->
+                GameItem(game = game, onLongPressed = onLongPressedGame, onClick = onClickGame)
             }
         }
         LazyRow {
             items(otherGames, key = { it.id }) { game ->
-                GameItem(game = game, onLongPressed = {
-                    viewModel.deleteGame(game)
-                })
+                GameItem(game = game, onLongPressed = onLongPressedGame, onClick = onClickGame)
             }
         }
 
@@ -106,7 +107,7 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
             sheetState = sheetState,
         ) {
             AddGameScreen(onGameClick = { igdbId ->
-//                showAddGame = false
+                showAddGame = false
                 navController.navigate("gameDetail/$igdbId")
             })
         }
@@ -121,16 +122,15 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
 fun GameItem(
     modifier: Modifier = Modifier,
     @PreviewParameter(GamePreviewParameterProvider::class) game: Game,
-    onLongPressed: (Offset) -> Unit = {}
+    onClick: (Game) -> Unit = {},
+    onLongPressed: (Game) -> Unit = {}
 ) {
     Column(modifier = Modifier
         .padding(12.dp)
         .pointerInput(Unit) {
             detectTapGestures(
-                onTap = {
-
-                },
-                onLongPress = onLongPressed
+                onTap = { onClick(game) },
+                onLongPress = { onLongPressed(game) }
             )
         }) {
         NetworkImage(
@@ -140,7 +140,12 @@ fun GameItem(
         Text(
             text = game.title,
             fontSize = 12.sp,
-            modifier = Modifier.padding(vertical = 12.dp)
+            maxLines = 2,
+            minLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .width(90.dp)
+                .padding(vertical = 12.dp)
         )
         StarRatingBar(rating = game.myRating ?: 0.0f)
     }

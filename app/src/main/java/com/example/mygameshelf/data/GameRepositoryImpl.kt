@@ -20,8 +20,8 @@ class GameRepositoryImpl @Inject constructor(
     private val gameApi: GameApi
 ) : GameRepository {
 
-    override fun observeLocalGamesByStatus(gameStatus: GameStatus): Flow<List<Game>> {
-        return gameDao.observeGames(gameStatus)
+    override fun observeLocalGamesByStatus(vararg gameStatus: GameStatus): Flow<List<Game>> {
+        return gameDao.observeGames(*gameStatus)
             .map { entities -> entities.map { it.toDomainModel() } }
     }
 

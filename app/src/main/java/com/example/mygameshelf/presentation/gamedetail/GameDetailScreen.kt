@@ -1,5 +1,6 @@
 package com.example.mygameshelf.presentation.gamedetail
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
@@ -29,12 +31,14 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mygameshelf.domain.model.Game
+import com.example.mygameshelf.domain.model.GameStatus
 import com.example.mygameshelf.presentation.common.GamePreviewParameterProvider
 import com.example.mygameshelf.presentation.common.NetworkImage
 import com.example.mygameshelf.presentation.common.StarRatingBar
@@ -72,31 +76,45 @@ fun GameDetailScreen(viewModel: GameDetailViewModel) {
             if (!hasChangesState) showEdit = false
             else showDiscardDialog = true
         }) {
-            StarRatingBar(
-                modifier = Modifier.padding(16.dp),
-                rating = editRating ?: 0.0f,
-                starSize = 40.dp,
-                onRatingChanged = { newRating ->
-                    viewModel.setRating(newRating)
-                })
+            Column(modifier = Modifier.padding(16.dp)) {
+                StarRatingBar(
+                    rating = editRating ?: 0.0f,
+                    starSize = 40.dp,
+                    onRatingChanged = { newRating ->
+                        viewModel.setRating(newRating)
+                    })
 
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                TextButton(onClick = {
-                    if (!hasChangesState) showEdit = false
-                    else showDiscardDialog = true
-                }) { Text("Cancel") }
+                GameStatus.entries.forEach { status ->
+                    if (status != GameStatus.UNKNOWN) {
+                        Box(
+                            modifier = Modifier
+                                .clickable { viewModel.setStatus(status) }
+                                .padding(vertical = 12.dp)
+                        ) {
+                            Text(
+                                text = status.name,
+                                color = if (status == editStatus) MaterialTheme.colorScheme.primary else Color.Gray
+                            )
+                        }
+                    }
+                }
 
-                TextButton(onClick = {
-                    viewModel.saveChanges()
-                    showEdit = false
-                }) { Text("Save") }
+                Row(
+                    Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(onClick = {
+                        if (!hasChangesState) showEdit = false
+                        else showDiscardDialog = true
+                    }) { Text("Cancel") }
+
+                    TextButton(onClick = {
+                        viewModel.saveChanges()
+                        showEdit = false
+                    }) { Text("Save") }
+                }
             }
-
         }
     }
 
