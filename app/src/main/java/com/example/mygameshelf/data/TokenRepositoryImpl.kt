@@ -1,6 +1,7 @@
 package com.example.mygameshelf.data
 
 import com.example.mygameshelf.BuildConfig
+import com.example.mygameshelf.core.network.ApiHelper
 import com.example.mygameshelf.core.network.TokenProvider
 import com.example.mygameshelf.data.local.TokenStore
 import com.example.mygameshelf.data.remote.api.AuthApi
@@ -12,20 +13,20 @@ class TokenRepositoryImpl @Inject constructor(
     private val tokenStore: TokenStore
 ) : TokenRepository, TokenProvider {
 
-    override suspend fun getValidToken(): String {
-        if (tokenStore.isTokenExpired()) {
-            val response = authApi.auth(
-                clientId = BuildConfig.TWITCH_CLIENT_ID,
-                clientSecret = BuildConfig.TWITCH_CLIENT_SECRET
-            )
-            if (!response.isSuccessful) {
-                throw Exception("Token fetch failed: ${response.code()}")
+    override suspend fun getValidToken(): Result<String> {
+        return kotlin.runCatching {
+            if (tokenStore.isTokenExpired()) {
+                val response = ApiHelper.call {
+                    authApi.auth(
+                        clientId = BuildConfig.TWITCH_CLIENT_ID,
+                        clientSecret = BuildConfig.TWITCH_CLIENT_SECRET
+                    )
+                }
+                tokenStore.saveToken(response.accessToken, response.expiresIn)
+                response.accessToken
+            } else {
+                tokenStore.getToken() ?: throw Exception("Token missing")
             }
-            val dto = response.body()!!
-            tokenStore.saveToken(dto.accessToken, dto.expiresIn)
-            return dto.accessToken
-        } else {
-            return tokenStore.getToken() ?: throw Exception("Token missing")
         }
     }
 }

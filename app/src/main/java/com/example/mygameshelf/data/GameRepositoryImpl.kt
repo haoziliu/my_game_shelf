@@ -1,5 +1,6 @@
 package com.example.mygameshelf.data
 
+import com.example.mygameshelf.core.network.ApiHelper
 import com.example.mygameshelf.data.local.dao.GameDao
 import com.example.mygameshelf.data.local.model.toDomainModel
 import com.example.mygameshelf.data.local.model.toEntity
@@ -12,7 +13,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.IOException
 import javax.inject.Inject
 
 class GameRepositoryImpl @Inject constructor(
@@ -43,29 +43,27 @@ class GameRepositoryImpl @Inject constructor(
     override fun observeLocalGameByIgdbId(igdbId: Long): Flow<Game?> =
         gameDao.observeGameByIgdbId(igdbId).map { it?.toDomainModel() }
 
-    override suspend fun searchRemoteGames(searchText: String): List<Game> {
+    override suspend fun searchRemoteGames(searchText: String): Result<List<Game>> {
         val rawQuery = "fields name,cover.image_id; limit 10; search \"$searchText\";"
-        val response = gameApi.games(
-            rawQuery.toRequestBody("text/plain".toMediaType())
-        )
-        if (response.isSuccessful) {
-            val dtoList = response.body() ?: emptyList()
-            return dtoList.map { it.toDomainModel() }
-        } else {
-            throw IOException("Error fetching games: ${response.code()}")
+        return runCatching {
+            val response = ApiHelper.call {
+                gameApi.games(
+                    rawQuery.toRequestBody("text/plain".toMediaType())
+                )
+            }
+            response.map { it.toDomainModel() }
         }
     }
 
-    override suspend fun fetchGameFromRemote(igdbId: Long): Game {
+    override suspend fun fetchGameFromRemote(igdbId: Long): Result<Game> {
         val rawQuery = "fields name,rating,cover.image_id,storyline,summary; limit 1; where id = $igdbId;"
-        val response = gameApi.games(
-            rawQuery.toRequestBody("text/plain".toMediaType())
-        )
-        if (response.isSuccessful) {
-            val dtoList = response.body() ?: emptyList()
-            return dtoList[0].toDomainModel()
-        } else {
-            throw IOException("Error fetching games: ${response.code()}")
+        return runCatching {
+            val response = ApiHelper.call {
+                gameApi.games(
+                    rawQuery.toRequestBody("text/plain".toMediaType())
+                )
+            }
+            response[0].toDomainModel()
         }
     }
 }

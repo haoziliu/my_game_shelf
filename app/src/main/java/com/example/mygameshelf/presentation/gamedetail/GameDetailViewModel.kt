@@ -41,7 +41,11 @@ class GameDetailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _gameDetail.value = fetchRemoteGameUseCase(igdbId)
+            fetchRemoteGameUseCase(igdbId).onSuccess {
+                _gameDetail.value = it
+            }.onFailure {
+                it.printStackTrace()
+            }
             localGame.filterNotNull().first().let { g ->
                 _editMyRating.value = g.myRating ?: 0.0f
                 _editStatus.value = g.status

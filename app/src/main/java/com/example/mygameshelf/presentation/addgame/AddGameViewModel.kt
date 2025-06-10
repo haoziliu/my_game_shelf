@@ -35,7 +35,11 @@ class AddGameViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .catch { _games.value = emptyList() }
                 .collect{ query ->
-                    _games.value = searchGamesUseCase(query)
+                    searchGamesUseCase(query).onSuccess {
+                        _games.value = it
+                    }.onFailure {
+                        it.printStackTrace()
+                    }
                 }
         }
     }

@@ -12,7 +12,7 @@ class AuthInterceptor @Inject constructor(
 ) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val token = runBlocking { tokenProvider.getValidToken() }
+        val token = runBlocking { tokenProvider.getValidToken() }.getOrDefault("")
 
         val newRequest = chain.request()
             .newBuilder()
@@ -23,7 +23,7 @@ class AuthInterceptor @Inject constructor(
 
         if (response.code == 401) {
             response.close()
-            val newToken = runBlocking { tokenProvider.getValidToken() } // fetch new
+            val newToken = runBlocking { tokenProvider.getValidToken() }.getOrDefault("")
             val retryRequest = chain.request()
                 .newBuilder()
                 .removeHeader("Authorization")

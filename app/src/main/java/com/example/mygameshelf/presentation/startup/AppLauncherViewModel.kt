@@ -19,11 +19,10 @@ class AppLauncherViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            try {
-                getValidTokenUseCase()
+            getValidTokenUseCase().onSuccess {
                 _ready.value = true
-            } catch (e: Exception) {
-                e.printStackTrace()
+            }.onFailure {
+                it.printStackTrace()
                 _ready.value = false
             }
         }
