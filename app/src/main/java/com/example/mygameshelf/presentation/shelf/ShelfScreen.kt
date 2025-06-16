@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -51,19 +53,25 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
     val onLongPressedGame: (Game) -> Unit = { game ->
         viewModel.deleteGame(game)
     }
+    val scrollState = rememberScrollState()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        LazyRow {
+    Column(modifier = Modifier.fillMaxSize().padding(start = 8.dp, end = 8.dp).verticalScroll(scrollState)) {
+        Text("Want to play")
+        LazyRow(modifier = Modifier.padding(start = 12.dp)) {
             items(wantToPlayGames, key = { it.id }) { game ->
                 GameItem(game = game, onLongPressed = onLongPressedGame, onClick = onClickGame)
             }
         }
-        LazyRow {
+        Spacer(modifier = Modifier.size(12.dp))
+        Text("Playing")
+        LazyRow(modifier = Modifier.padding(start = 12.dp)) {
             items(playingGames, key = { it.id }) { game ->
                 GameItem(game = game, onLongPressed = onLongPressedGame, onClick = onClickGame)
             }
         }
-        LazyRow {
+        Spacer(modifier = Modifier.size(12.dp))
+        Text("Finished or dropped")
+        LazyRow(modifier = Modifier.padding(start = 12.dp)) {
             items(otherGames, key = { it.id }) { game ->
                 GameItem(game = game, onLongPressed = onLongPressedGame, onClick = onClickGame)
             }
@@ -78,29 +86,6 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
             onClick = { showAddGame = true })
     }
 
-//    Button(
-//        content = { Text("Find game") },
-//        onClick = {
-//            val number = Random.nextLong(100)
-//            viewModel.addGame(
-//                Game(
-//                    title = "new game $number",
-//                    status = GameStatus.COMPLETED,
-//                    rating = Random.nextFloat() * 5,
-//                    lastEdit = LocalDate.now(),
-//                )
-//            )
-//            viewModel.addGame(
-//                Game(
-//                    title = "new game $number",
-//                    status = GameStatus.WANT_TO_PLAY,
-//                    rating = Random.nextFloat() * 5,
-//                    lastEdit = LocalDate.now(),
-//                )
-//            )
-//        }
-//    )
-
     if (showAddGame) {
         ModalBottomSheet(
             onDismissRequest = { showAddGame = false },
@@ -112,7 +97,6 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
             })
         }
     }
-
 
 }
 

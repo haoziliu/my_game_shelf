@@ -49,8 +49,13 @@ class GameDetailViewModel @Inject constructor(
             localGame.filterNotNull().first().let { g ->
                 _editMyRating.value = g.myRating ?: 0.0f
                 _editStatus.value = g.status
-                _gameDetail.value?.myRating = g.myRating
-                _gameDetail.value?.status = g.status
+                val currentDetail = _gameDetail.value
+                if (currentDetail != null) {
+                    _gameDetail.value = currentDetail.copy(
+                        myRating = g.myRating,
+                        status = g.status
+                    )
+                }
             }
         }
     }
@@ -83,6 +88,11 @@ class GameDetailViewModel @Inject constructor(
             saveGameUseCase(updated)
             _hasUnsavedChanges.value = false
         }
+        _gameDetail.value = _gameDetail.value!!.copy(
+            myRating = updated.myRating,
+            status = updated.status,
+            lastEdit = updated.lastEdit,
+        )
     }
 
     fun resetEdits() {
