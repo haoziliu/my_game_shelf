@@ -60,6 +60,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     testImplementation(libs.junit)
+    testImplementation(libs.mockk) // Add MockK
+    testImplementation(libs.kotlinx.coroutines.test) // For testing coroutines
+    testImplementation(libs.truth)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
