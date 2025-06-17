@@ -20,7 +20,7 @@ class ShelfViewModel @Inject constructor(
     private val deleteGameUseCase: DeleteGameUseCase,
 ) : ViewModel() {
 
-    val wantToPlayGames = observeLocalGamesUseCase(GameStatus.WANT_TO_PLAY)
+    val wantToPlayGames = observeLocalGamesUseCase(GameStatus.WANT_TO_PLAY, GameStatus.ON_HOLD)
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val playingGames = observeLocalGamesUseCase(GameStatus.PLAYING)
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
