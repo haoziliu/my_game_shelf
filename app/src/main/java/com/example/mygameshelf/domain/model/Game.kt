@@ -1,6 +1,6 @@
 package com.example.mygameshelf.domain.model
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class Game(
     val id: Long = 0L,
@@ -10,7 +10,7 @@ data class Game(
     val genre: String? = null,
     var status: GameStatus = GameStatus.UNKNOWN,
     var myRating: Float? = null,
-    var lastEdit: LocalDate? = null,
+    var lastEdit: LocalDateTime? = null,
     val imageId: String? = null,
     val summary: String? = null,
     val storyline: String? = null,

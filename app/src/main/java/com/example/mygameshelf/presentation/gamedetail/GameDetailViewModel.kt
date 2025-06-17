@@ -14,10 +14,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -53,7 +52,8 @@ class GameDetailViewModel @Inject constructor(
                 if (currentDetail != null) {
                     _gameDetail.value = currentDetail.copy(
                         myRating = g.myRating,
-                        status = g.status
+                        status = g.status,
+                        lastEdit = g.lastEdit,
                     )
                 }
             }
@@ -82,7 +82,7 @@ class GameDetailViewModel @Inject constructor(
         val updated = current.copy(
             myRating = newRating,
             status = newStatus,
-            lastEdit = LocalDate.now()
+            lastEdit = LocalDateTime.now()
         )
         viewModelScope.launch {
             saveGameUseCase(updated)

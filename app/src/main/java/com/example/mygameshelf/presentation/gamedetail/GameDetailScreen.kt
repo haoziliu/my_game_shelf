@@ -42,6 +42,7 @@ import com.example.mygameshelf.domain.model.GameStatus
 import com.example.mygameshelf.presentation.common.GamePreviewParameterProvider
 import com.example.mygameshelf.presentation.common.NetworkImage
 import com.example.mygameshelf.presentation.common.StarRatingBar
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,12 +78,17 @@ fun GameDetailScreen(viewModel: GameDetailViewModel) {
             else showDiscardDialog = true
         }) {
             Column(modifier = Modifier.padding(16.dp)) {
-                StarRatingBar(
-                    rating = editRating ?: 0.0f,
-                    starSize = 40.dp,
-                    onRatingChanged = { newRating ->
-                        viewModel.setRating(newRating)
-                    })
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    StarRatingBar(
+                        rating = editRating ?: 0.0f,
+                        starSize = 40.dp,
+                        onRatingChanged = { newRating ->
+                            viewModel.setRating(newRating)
+                        })
+                }
 
                 GameStatus.entries.forEach { status ->
                     if (status != GameStatus.UNKNOWN) {
@@ -170,14 +176,29 @@ fun GameDetail(
 
         Spacer(Modifier.size(16.dp))
 
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text("My rating:")
-            StarRatingBar(
-                rating = game.myRating ?: 0.0f,
-                starSize = 20.dp
-            )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClickEdit)
+                .padding(top = 12.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier) {
+                Row {
+                    Text("My rating:")
+                    StarRatingBar(
+                        rating = game.myRating ?: 0.0f,
+                        starSize = 20.dp
+                    )
+                }
+                if (game.lastEdit != null) {
+                    Text("Update: " + game.lastEdit!!.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                }
+            }
             Spacer(Modifier.weight(1f))
-            TextButton(content = { Text(game.status.name) }, onClick = onClickEdit)
+            if (game.status != GameStatus.UNKNOWN) {
+                Text(game.status.name)
+            }
         }
 
         game.rating?.let {

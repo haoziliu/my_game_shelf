@@ -5,7 +5,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.domain.model.GameStatus
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Entity(
     tableName = "games",
@@ -19,7 +19,7 @@ data class GameEntity(
     val genre: String?,
     val status: GameStatus,
     val rating: Float?,
-    var lastEdit: LocalDate?,
+    var lastEdit: LocalDateTime?,
     var imageId: String?
 )
 

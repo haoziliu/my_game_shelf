@@ -27,12 +27,6 @@ class ShelfViewModel @Inject constructor(
     val otherGames = observeLocalGamesUseCase(GameStatus.UNKNOWN, GameStatus.PLAYED, GameStatus.DROPPED)
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun addGame(game: Game) {
-        viewModelScope.launch {
-            saveGameUseCase(game)
-        }
-    }
-
     fun deleteGame(game: Game) {
         viewModelScope.launch {
             deleteGameUseCase(game.id)
