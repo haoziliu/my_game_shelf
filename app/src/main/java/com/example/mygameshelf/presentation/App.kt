@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,12 +14,22 @@ import com.example.mygameshelf.presentation.gamedetail.GameDetailScreen
 import com.example.mygameshelf.presentation.gamedetail.GameDetailViewModel
 import com.example.mygameshelf.presentation.shelf.ShelfScreen
 import com.example.mygameshelf.presentation.startup.AppLauncherScreen
+import noiseBackground
 
 @Composable
 fun App() {
     val navController = rememberNavController()
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .noiseBackground(
+                baseColor = Color(0xFFB2AC88),
+                noiseColor = Color.Black.copy(alpha = 0.4f),
+                noiseDensity = 0.08f
+            ),
+        containerColor = Color.Transparent
+    ) { innerPadding ->
         NavHost(
             navController,
             startDestination = "launcher",

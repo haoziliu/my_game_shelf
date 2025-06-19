@@ -1,21 +1,25 @@
 package com.example.mygameshelf.presentation.shelf
 
+import SkeuomorphicImagePlate
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
@@ -29,20 +33,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.googlefonts.Font
-import androidx.compose.ui.text.googlefonts.GoogleFont
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.mygameshelf.R
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.presentation.addgame.AddGameScreen
+import com.example.mygameshelf.presentation.common.CustomImageButton
+import com.example.mygameshelf.presentation.common.GameListPreviewParameterProvider
 import com.example.mygameshelf.presentation.common.GamePreviewParameterProvider
 import com.example.mygameshelf.presentation.common.NetworkImage
 import com.example.mygameshelf.presentation.common.StarRatingBar
@@ -55,6 +64,9 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
     val otherGames by viewModel.otherGames.collectAsStateWithLifecycle()
     var showAddGame by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val onClickAdd: () -> Unit = {
+        showAddGame = true
+    }
     val onClickGame: (Game) -> Unit = { game ->
         navController.navigate("gameDetail/${game.igdbId}")
     }
@@ -63,101 +75,43 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
     }
     val scrollState = rememberScrollState()
 
-    val provider = GoogleFont.Provider(
-        providerAuthority = "com.google.android.gms.fonts",
-        providerPackage = "com.google.android.gms",
-        certificates = R.array.com_google_android_gms_fonts_certs
-    )
-    val fontName = GoogleFont("Press Start 2P")
-    val pixelFont = FontFamily(Font(googleFont = fontName, fontProvider = provider))
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
     ) {
-        Text("Want to play", modifier = Modifier.padding(start = 12.dp), fontFamily = pixelFont)
-        if (wantToPlayGames.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .padding(12.dp)
-                    .shadow(elevation = 4.dp)
-                    .clickable { showAddGame = true },
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(width = 90.dp, height = 120.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
-                }
-            }
-        } else {
-            LazyRow(modifier = Modifier) {
-                items(wantToPlayGames, key = { it.id }) { game ->
-                    GameItem(game = game, onLongPressed = onLongPressedGame, onClick = onClickGame)
-                }
-            }
-        }
-        Spacer(modifier = Modifier.size(12.dp))
-        Text("Playing", modifier = Modifier.padding(start = 12.dp), fontFamily = pixelFont)
-        if (playingGames.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .padding(12.dp)
-                    .shadow(elevation = 4.dp)
-                    .clickable { showAddGame = true },
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(width = 90.dp, height = 120.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
-                }
-            }
-        } else {
-            LazyRow(modifier = Modifier) {
-                items(playingGames, key = { it.id }) { game ->
-                    GameItem(game = game, onLongPressed = onLongPressedGame, onClick = onClickGame)
-                }
-            }
-        }
-        Spacer(modifier = Modifier.size(12.dp))
-        Text(
-            "Finished or dropped",
-            modifier = Modifier.padding(start = 12.dp),
-            fontFamily = pixelFont
+        Shelf(
+            gameList = wantToPlayGames,
+            "Want to play",
+            onClickAdd = onClickAdd,
+            onClickGame = onClickGame,
+            onLongPressedGame = onLongPressedGame
         )
-        if (otherGames.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .padding(12.dp)
-                    .shadow(elevation = 4.dp)
-                    .clickable { showAddGame = true },
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(width = 90.dp, height = 120.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
-                }
-            }
-        } else {
-            LazyRow(modifier = Modifier) {
-                items(otherGames, key = { it.id }) { game ->
-                    GameItem(game = game, onLongPressed = onLongPressedGame, onClick = onClickGame)
-                }
-            }
-        }
+        Spacer(modifier = Modifier.size(48.dp))
+        Shelf(
+            gameList = playingGames,
+            "Playing",
+            onClickAdd = onClickAdd,
+            onClickGame = onClickGame,
+            onLongPressedGame = onLongPressedGame
+        )
+        Spacer(modifier = Modifier.size(48.dp))
+        Shelf(
+            gameList = otherGames,
+            "Finished",
+            onClickAdd = onClickAdd,
+            onClickGame = onClickGame,
+            onLongPressedGame = onLongPressedGame
+        )
         Spacer(Modifier.weight(1f))
 
-        Button(modifier = Modifier
-            .align(Alignment.CenterHorizontally)
-            .padding(bottom = 24.dp),
-            content = { Text("Find game", fontFamily = pixelFont) },
-            onClick = { showAddGame = true })
+        CustomImageButton(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(start = 48.dp, bottom = 24.dp),
+            text = "Find game",
+            onClick = onClickAdd
+        )
     }
 
     if (showAddGame) {
@@ -171,9 +125,81 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
             })
         }
     }
-
 }
 
+@Preview(showBackground = true)
+@Composable
+fun Shelf(
+    @PreviewParameter(GameListPreviewParameterProvider::class) gameList: List<Game>,
+    title: String = "Shelf title",
+    onClickAdd: () -> Unit = {},
+    onClickGame: (Game) -> Unit = {},
+    onLongPressedGame: (Game) -> Unit = {}
+) {
+    val brassPlatePainter = painterResource(id = R.drawable.background_brass)
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SkeuomorphicImagePlate(
+            modifier = Modifier,
+            painter = brassPlatePainter,
+            text = title,
+            elevation = 2.dp
+        )
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.background_shelf),
+                    contentDescription = "Shelf background",
+                    modifier = Modifier
+                        .matchParentSize()
+                        .padding(top = 40.dp),
+                    contentScale = ContentScale.FillBounds,
+                )
+                if (gameList.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .padding(
+                                start = 20.dp,
+                                top = 20.dp
+                            )
+                            .shadow(elevation = 2.dp)
+                            .clickable(onClick = onClickAdd),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(width = 90.dp, height = 120.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Add")
+                        }
+                    }
+                } else {
+                    LazyRow(
+                        modifier = Modifier.padding(
+                            start = 20.dp,
+                            end = 20.dp,
+                            top = 16.dp
+                        )
+                    ) {
+                        items(gameList, key = { it.id }) { game ->
+                            GameItem(
+                                game = game,
+                                onLongPressed = onLongPressedGame,
+                                onClick = onClickGame
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
@@ -182,27 +208,72 @@ fun GameItem(
     onClick: (Game) -> Unit = {},
     onLongPressed: (Game) -> Unit = {}
 ) {
+    var showTitleTooltip by remember { mutableStateOf(false) }
+    var barYPosition by remember {
+        mutableStateOf(0)
+    }
     Column(
         modifier = Modifier
-            .padding(12.dp)
-            .clickable(onClick = { onClick(game) })
+            .padding(4.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { onClick(game) },
+                    onLongPress = { showTitleTooltip = true }
+                )
+            }
     ) {
+        if (showTitleTooltip) {
+            Popup(
+                onDismissRequest = { showTitleTooltip = false },
+                offset = IntOffset(0, y = -barYPosition),
+                properties = PopupProperties(
+                    clippingEnabled = false
+                )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .wrapContentSize()
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.background_paper),
+                        contentDescription = "Shelf background",
+                        modifier = Modifier.matchParentSize(),
+                        contentScale = ContentScale.FillBounds,
+                    )
+                    Column(
+                        modifier = Modifier
+                            .width(180.dp)
+                            .padding(start = 8.dp, end = 8.dp)
+                            .onPlaced {
+                                barYPosition = it.size.height
+                            }, horizontalAlignment = Alignment.Start
+                    ) {
+                        Text(
+                            text = game.title,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        StarRatingBar(rating = game.myRating ?: 0.0f)
+                    }
+                }
+            }
+        }
         NetworkImage(
             url = game.coverBigUrl ?: "",
             modifier = Modifier.size(width = 90.dp, height = 120.dp)
         )
-        Box(
-            modifier = Modifier
-                .height(60.dp)
-                .width(90.dp), contentAlignment = Alignment.CenterStart
-        ) {
-            Text(
-                text = game.title,
-                fontSize = 12.sp,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        StarRatingBar(rating = game.myRating ?: 0.0f)
+//        Column (
+//            modifier = Modifier
+//                .height(60.dp)
+//                .width(90.dp), contentAlignment = Alignment.CenterStart
+//        ) {
+//            Text(
+//                text = game.title,
+//                fontSize = 12.sp,
+//                maxLines = 2,
+//                overflow = TextOverflow.Ellipsis,
+//            )
+//        }
+//        StarRatingBar(rating = game.myRating ?: 0.0f)
     }
 }

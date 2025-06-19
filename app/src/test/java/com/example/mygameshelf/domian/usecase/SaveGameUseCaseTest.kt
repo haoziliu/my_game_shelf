@@ -12,7 +12,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 class SaveGameUseCaseTest {
     @get:Rule
@@ -34,7 +34,7 @@ class SaveGameUseCaseTest {
             title = "Game to save",
             status = GameStatus.PLAYING,
             myRating = 0.8f,
-            lastEdit = LocalDate.now()
+            lastEdit = LocalDateTime.now()
         )
         coEvery { repository.saveGame(any()) } returns Unit
         saveGameUseCase(gameToSave)
