@@ -1,4 +1,4 @@
-package com.example.mygameshelf.presentation.addgame
+package com.example.mygameshelf.presentation.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-class AddGameViewModel @Inject constructor(
+class SearchGameViewModel @Inject constructor(
     val searchGamesUseCase: SearchGamesUseCase
 ) : ViewModel() {
     private val _searchText = MutableStateFlow("")

@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mygameshelf.presentation.gamedetail.GameDetailScreen
 import com.example.mygameshelf.presentation.gamedetail.GameDetailViewModel
+import com.example.mygameshelf.presentation.search.SearchGameScreen
 import com.example.mygameshelf.presentation.shelf.ShelfScreen
 import com.example.mygameshelf.presentation.startup.AppLauncherScreen
 import noiseBackground
@@ -19,7 +20,9 @@ import noiseBackground
 @Composable
 fun App() {
     val navController = rememberNavController()
-
+    val onClickGame: (Long) -> Unit = { igdbId ->
+        navController.navigate("gameDetail/${igdbId}")
+    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -48,11 +51,16 @@ fun App() {
                 )
             }
             composable("main") {
-                ShelfScreen(navController = navController)
+                ShelfScreen(onClickAdd = {
+                    navController.navigate("searchGame")
+                }, onClickGame = onClickGame)
+            }
+            composable("searchGame") {
+                SearchGameScreen(onClickGame = onClickGame, onBack = { navController.popBackStack() })
             }
             composable("gameDetail/{igdbId}") { backStackEntry ->
                 val detailVm: GameDetailViewModel = hiltViewModel(backStackEntry)
-                GameDetailScreen(detailVm)
+                GameDetailScreen(detailVm, onBack = { navController.popBackStack() })
             }
         }
     }

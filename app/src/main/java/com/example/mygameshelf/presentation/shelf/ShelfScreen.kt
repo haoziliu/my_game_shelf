@@ -20,11 +20,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,27 +46,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.mygameshelf.R
 import com.example.mygameshelf.domain.model.Game
-import com.example.mygameshelf.presentation.addgame.AddGameScreen
-import com.example.mygameshelf.presentation.common.CustomImageButton
 import com.example.mygameshelf.presentation.common.GameListPreviewParameterProvider
 import com.example.mygameshelf.presentation.common.GamePreviewParameterProvider
 import com.example.mygameshelf.presentation.common.NetworkImage
 import com.example.mygameshelf.presentation.common.StarRatingBar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavController) {
+fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(),
+                onClickAdd: () -> Unit,
+                onClickGame: (Long) -> Unit) {
     val wantToPlayGames by viewModel.wantToPlayGames.collectAsStateWithLifecycle()
     val playingGames by viewModel.playingGames.collectAsStateWithLifecycle()
     val otherGames by viewModel.otherGames.collectAsStateWithLifecycle()
-    var showAddGame by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val onClickAdd: () -> Unit = {
-        showAddGame = true
-    }
-    val onClickGame: (Game) -> Unit = { game ->
-        navController.navigate("gameDetail/${game.igdbId}")
-    }
     val onLongPressedGame: (Game) -> Unit = { game ->
         viewModel.deleteGame(game)
     }
@@ -123,17 +111,6 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
 //        )
     }
 
-    if (showAddGame) {
-        ModalBottomSheet(
-            onDismissRequest = { showAddGame = false },
-            sheetState = sheetState,
-        ) {
-            AddGameScreen(onGameClick = { igdbId ->
-                showAddGame = false
-                navController.navigate("gameDetail/$igdbId")
-            })
-        }
-    }
 }
 
 @Preview(showBackground = true)
@@ -142,7 +119,7 @@ fun Shelf(
     @PreviewParameter(GameListPreviewParameterProvider::class) gameList: List<Game>,
     title: String = "Shelf title",
     onClickAdd: () -> Unit = {},
-    onClickGame: (Game) -> Unit = {},
+    onClickGame: (Long) -> Unit = {},
     onLongPressedGame: (Game) -> Unit = {}
 ) {
     val brassPlatePainter = painterResource(id = R.drawable.background_brass)
@@ -214,7 +191,7 @@ fun Shelf(
 @Composable
 fun GameItem(
     @PreviewParameter(GamePreviewParameterProvider::class) game: Game,
-    onClick: (Game) -> Unit = {},
+    onClick: (Long) -> Unit = {},
     onLongPressed: (Game) -> Unit = {}
 ) {
     var showTitleTooltip by remember { mutableStateOf(false) }
@@ -226,7 +203,7 @@ fun GameItem(
             .padding(4.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onTap = { onClick(game) },
+                    onTap = { onClick(game.igdbId!!) },
                     onLongPress = { showTitleTooltip = true }
                 )
             }

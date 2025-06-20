@@ -13,11 +13,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -46,7 +51,7 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GameDetailScreen(viewModel: GameDetailViewModel) {
+fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
 //    val localGame by viewModel.localGame.collectAsStateWithLifecycle()
     val gameDetail by viewModel.gameDetail.collectAsStateWithLifecycle()
     val hasUnsavedChanges by viewModel.hasUnsavedChanges.collectAsStateWithLifecycle()
@@ -65,7 +70,7 @@ fun GameDetailScreen(viewModel: GameDetailViewModel) {
     gameDetail?.let { game ->
         GameDetail(game, onClickEdit = {
             showEdit = true
-        })
+        }, onBack = onBack)
     } ?: run {
         Box(Modifier.fillMaxSize()) {
             CircularProgressIndicator(Modifier.align(Alignment.Center))
@@ -150,6 +155,7 @@ fun GameDetailScreen(viewModel: GameDetailViewModel) {
 fun GameDetail(
     @PreviewParameter(GamePreviewParameterProvider::class) game: Game,
     onClickEdit: () -> Unit = {},
+    onBack: () -> Unit = {},
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -158,7 +164,10 @@ fun GameDetail(
             .padding(16.dp)
             .verticalScroll(scrollState)
     ) {
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
+            }
             NetworkImage(
                 url = game.coverBigUrl ?: "",
                 modifier = Modifier.size(width = 90.dp, height = 120.dp)

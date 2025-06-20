@@ -1,4 +1,4 @@
-package com.example.mygameshelf.presentation.addgame
+package com.example.mygameshelf.presentation.search
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,7 +34,9 @@ import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.presentation.common.NetworkImage
 
 @Composable
-fun AddGameScreen(viewModel: AddGameViewModel = hiltViewModel(), onGameClick: (Long) -> Unit) {
+fun SearchGameScreen(viewModel: SearchGameViewModel = hiltViewModel(),
+                     onClickGame: (Long) -> Unit,
+                     onBack: () -> Unit) {
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
     val games by viewModel.games.collectAsStateWithLifecycle()
 
@@ -41,6 +44,11 @@ fun AddGameScreen(viewModel: AddGameViewModel = hiltViewModel(), onGameClick: (L
         OutlinedTextField(
             value = searchText,
             onValueChange = { viewModel.onSearchTextChanged(it) },
+            leadingIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
+                }
+            },
             trailingIcon = {
                 IconButton(onClick = { viewModel.onSearchTextChanged("") }) {
                     Icon(Icons.Default.Clear, contentDescription = "Clear")
@@ -55,7 +63,7 @@ fun AddGameScreen(viewModel: AddGameViewModel = hiltViewModel(), onGameClick: (L
         }
         LazyColumn {
             items(games) { game ->
-                GameRow(game, onClick = { onGameClick(game.igdbId!!) })
+                GameRow(game, onClick = { onClickGame(game.igdbId!!) })
             }
         }
 
