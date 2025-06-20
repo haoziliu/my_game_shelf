@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.mygameshelf.R
 import com.example.mygameshelf.presentation.theme.PixelFont
 
@@ -54,7 +56,7 @@ fun CustomImageButton(
     ) {
         // 3. 背景图片
         Image(
-            painter = painterResource(id = R.drawable.background_wooden_sign),
+            painter = painterResource(id = R.drawable.background_paper),
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
             modifier = Modifier.matchParentSize()
@@ -62,9 +64,10 @@ fun CustomImageButton(
 
         // 4. 按钮文字
         Text(
-            modifier = Modifier.padding(start = 48.dp, end = 72.dp, top = 72.dp, bottom = 16.dp),
+            modifier = Modifier.padding(start = 44.dp, end = 44.dp, top = 16.dp, bottom = 16.dp),
             text = text,
-            color = Color(0xff703b1c),
+            color = Color(0xff663f13),
+            fontSize = 12.sp,
             fontFamily = PixelFont
         )
     }

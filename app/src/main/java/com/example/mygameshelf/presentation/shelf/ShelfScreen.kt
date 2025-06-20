@@ -87,7 +87,7 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
             onClickGame = onClickGame,
             onLongPressedGame = onLongPressedGame
         )
-        Spacer(modifier = Modifier.size(48.dp))
+        Spacer(modifier = Modifier.size(36.dp))
         Shelf(
             gameList = playingGames,
             "Playing",
@@ -95,7 +95,7 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
             onClickGame = onClickGame,
             onLongPressedGame = onLongPressedGame
         )
-        Spacer(modifier = Modifier.size(48.dp))
+        Spacer(modifier = Modifier.size(36.dp))
         Shelf(
             gameList = otherGames,
             "Finished",
@@ -105,13 +105,22 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(), navController: NavC
         )
         Spacer(Modifier.weight(1f))
 
-        CustomImageButton(
+        Image(
+            painter = painterResource(id = R.drawable.image_find),
+            contentDescription = "Find game",
+            contentScale = ContentScale.FillBounds,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .padding(start = 48.dp, bottom = 24.dp),
-            text = "Find game",
-            onClick = onClickAdd
+                .size(160.dp)
+                .clickable (onClick = onClickAdd),
         )
+//        CustomImageButton(
+//            modifier = Modifier
+//                .align(Alignment.CenterHorizontally)
+//                .padding(bottom = 12.dp),
+//            text = "Find game",
+//            onClick = onClickAdd
+//        )
     }
 
     if (showAddGame) {
@@ -158,7 +167,7 @@ fun Shelf(
                     contentDescription = "Shelf background",
                     modifier = Modifier
                         .matchParentSize()
-                        .padding(top = 40.dp),
+                        .padding(top = 20.dp),
                     contentScale = ContentScale.FillBounds,
                 )
                 if (gameList.isEmpty()) {
@@ -166,7 +175,7 @@ fun Shelf(
                         modifier = Modifier
                             .padding(
                                 start = 20.dp,
-                                top = 20.dp
+                                top = 10.dp
                             )
                             .shadow(elevation = 2.dp)
                             .clickable(onClick = onClickAdd),
@@ -184,7 +193,7 @@ fun Shelf(
                         modifier = Modifier.padding(
                             start = 20.dp,
                             end = 20.dp,
-                            top = 16.dp
+                            top = 8.dp
                         )
                     ) {
                         items(gameList, key = { it.id }) { game ->

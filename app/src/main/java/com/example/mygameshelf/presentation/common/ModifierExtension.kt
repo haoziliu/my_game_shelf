@@ -134,7 +134,7 @@ fun SkeuomorphicImagePlate(
                 )
             ),
             fontSize = 14.sp,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 8.dp),
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 12.dp),
         )
     }
 }
