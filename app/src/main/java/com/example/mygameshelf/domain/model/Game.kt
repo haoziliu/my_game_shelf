@@ -15,11 +15,9 @@ data class Game(
     val summary: String? = null,
     val storyline: String? = null,
     val rating: Float? = null,
+    val artworksId: List<String>? = null,
 ) {
-    val coverSmallUrl: String?
-        get() = imageId?.let { "https://images.igdb.com/igdb/image/upload/t_cover_small/$it.jpg" }
-    val coverBigUrl: String?
-        get() = imageId?.let { "https://images.igdb.com/igdb/image/upload/t_cover_big/$it.jpg" }
+
 }
 
 enum class GameStatus {

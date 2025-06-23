@@ -44,11 +44,13 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mygameshelf.R
+import com.example.mygameshelf.core.Utils
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.presentation.common.GameListPreviewParameterProvider
 import com.example.mygameshelf.presentation.common.GamePreviewParameterProvider
 import com.example.mygameshelf.presentation.common.NetworkImage
 import com.example.mygameshelf.presentation.common.StarRatingBar
+import com.example.mygameshelf.presentation.theme.PixelFont
 
 @Composable
 fun ShelfScreen(
@@ -123,7 +125,8 @@ fun Shelf(
             modifier = Modifier,
             painter = brassPlatePainter,
             text = title,
-            elevation = 2.dp
+            textFontFamily = PixelFont,
+            elevation = 2.dp,
         )
         Column {
             Box(
@@ -237,7 +240,7 @@ fun GameItem(
             }
         }
         NetworkImage(
-            url = game.coverBigUrl ?: "",
+            url = Utils.coverBigUrl(game.imageId) ?: "",
             modifier = Modifier.size(width = 90.dp, height = 120.dp)
         )
 //        Column (

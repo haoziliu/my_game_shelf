@@ -1,5 +1,6 @@
 package com.example.mygameshelf.presentation.gamedetail
 
+import SkeuomorphicImagePlate
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -22,7 +27,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -37,11 +41,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.mygameshelf.R
+import com.example.mygameshelf.core.Utils
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.domain.model.GameStatus
 import com.example.mygameshelf.presentation.common.GamePreviewParameterProvider
@@ -52,9 +58,7 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
-//    val localGame by viewModel.localGame.collectAsStateWithLifecycle()
     val gameDetail by viewModel.gameDetail.collectAsStateWithLifecycle()
-    val hasUnsavedChanges by viewModel.hasUnsavedChanges.collectAsStateWithLifecycle()
     var showEdit by remember { mutableStateOf(false) }
     var showDiscardDialog by remember { mutableStateOf(false) }
     val editStatus by viewModel.editStatus.collectAsStateWithLifecycle()
@@ -161,28 +165,28 @@ fun GameDetail(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(start = 16.dp, end = 16.dp)
             .verticalScroll(scrollState)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            NetworkImage(
+                url = Utils.coverBigUrl(game.imageId) ?: "",
+                modifier = Modifier
+                    .size(width = 220.dp, height = 293.dp)
+                    .align(Alignment.Center)
+            )
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
             }
-            NetworkImage(
-                url = game.coverBigUrl ?: "",
-                modifier = Modifier.size(width = 90.dp, height = 120.dp)
-            )
-            Spacer(Modifier.size(16.dp))
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp)
-            ) {
-                Text(text = game.title, fontSize = 18.sp)
-                Text(game.genre ?: "")
-            }
         }
-
+        Spacer(Modifier.size(16.dp))
+        val brassPlatePainter = painterResource(id = R.drawable.background_brass)
+        SkeuomorphicImagePlate(
+            modifier = Modifier.wrapContentSize().align(Alignment.CenterHorizontally),
+            painter = brassPlatePainter,
+            text = game.title,
+            elevation = 2.dp
+        )
         Spacer(Modifier.size(16.dp))
 
         Row(
@@ -222,6 +226,22 @@ fun GameDetail(
             Spacer(Modifier.size(16.dp))
             Text("Summary:")
             Text(it)
+        }
+
+        game.artworksId?.let { artworksId ->
+            Spacer(Modifier.size(16.dp))
+            Text("Artworks:")
+            LazyRow {
+                items(artworksId, key = { it }) { imageId ->
+                    NetworkImage(
+                        url = Utils.screenshotBigUrl(imageId) ?: "",
+                        modifier = Modifier
+                            .width(256.dp)
+                            .height(144.dp)
+                            .padding(4.dp)
+                    )
+                }
+            }
         }
 
         game.storyline?.let {

@@ -56,7 +56,7 @@ class GameRepositoryImpl @Inject constructor(
     }
 
     override suspend fun fetchGameFromRemote(igdbId: Long): Result<Game> {
-        val rawQuery = "fields name,rating,cover.image_id,storyline,summary; limit 1; where id = $igdbId;"
+        val rawQuery = "fields name,rating,cover.image_id,storyline,summary,artworks.image_id; limit 1; where id = $igdbId;"
         return runCatching {
             val response = ApiHelper.call {
                 gameApi.games(

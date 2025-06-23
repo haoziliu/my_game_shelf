@@ -26,10 +26,11 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.mygameshelf.presentation.theme.PixelFont
 import kotlin.random.Random
 
 @Composable
@@ -93,6 +94,7 @@ fun SkeuomorphicImagePlate(
     modifier: Modifier = Modifier,
     painter: Painter,
     text: String,
+    textFontFamily: FontFamily = FontFamily.Serif,
     elevation: Dp = 6.dp
 ) {
     Box(
@@ -101,7 +103,7 @@ fun SkeuomorphicImagePlate(
     ) {
         val shadowOffsetX = (elevation * 0.5f)
         val shadowOffsetY = (elevation * 0.7f)
-        val shadowBlurRadius = (elevation * 1.5f)
+        val shadowBlurRadius = (elevation * 1f)
         val shadowAlpha = 0.4f
 
         Image(
@@ -124,15 +126,16 @@ fun SkeuomorphicImagePlate(
 
         Text(
             text = text,
-            fontFamily = PixelFont,
+            fontFamily = textFontFamily,
             color = Color(0xFF4C3D21).copy(alpha = 0.9f),
             style = MaterialTheme.typography.bodyLarge.copy(
                 shadow = Shadow(
-                    color = Color.White.copy(alpha = 0.3f),
-                    offset = Offset(1f, 1f),
+                    color = Color.White.copy(alpha = 0.5f),
+                    offset = Offset(3f, 3f),
                     blurRadius = 1f
                 )
             ),
+            textAlign = TextAlign.Center,
             fontSize = 14.sp,
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 12.dp),
         )

@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.mygameshelf.core.Utils
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.presentation.common.NetworkImage
 import kotlinx.coroutines.delay
@@ -53,7 +54,7 @@ fun SearchGameScreen(
         focusRequester.requestFocus()
     }
 
-    Column(Modifier.padding(16.dp)) {
+    Column(Modifier.padding(start = 16.dp, end = 16.dp)) {
         OutlinedTextField(
             value = searchText,
             onValueChange = { viewModel.onSearchTextChanged(it) },
@@ -101,8 +102,8 @@ fun GameRow(
             }
     ) {
         NetworkImage(
-            url = game.coverSmallUrl ?: "",
-            modifier = Modifier.size(width = 48.dp, height = 72.dp)
+            url = Utils.coverSmallUrl(game.imageId) ?: "",
+            modifier = Modifier.size(width = 54.dp, height = 72.dp)
         )
         Spacer(Modifier.width(16.dp))
         Text(modifier = Modifier.align(Alignment.CenterVertically), text = game.title)

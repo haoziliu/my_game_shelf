@@ -6,13 +6,14 @@ import com.google.gson.annotations.SerializedName
 data class GameDTO(
     val id: Long,
     val name: String,
-    val cover: CoverDTO? = null,
+    val cover: ImageDTO? = null,
     val rating: Float? = null,
     val summary: String? = null,
-    val storyline: String? = null
+    val storyline: String? = null,
+    val artworks: List<ImageDTO>? = null,
 )
 
-data class CoverDTO(
+data class ImageDTO(
     val id: Long,
     @SerializedName("image_id")
     val imageId: String
@@ -26,5 +27,6 @@ fun GameDTO.toDomainModel(): Game {
         rating = rating,
         summary = summary,
         storyline = storyline,
+        artworksId = artworks?.map { it.imageId }
     )
 }
