@@ -43,7 +43,6 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.example.mygameshelf.R
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.presentation.common.GameListPreviewParameterProvider
@@ -52,9 +51,11 @@ import com.example.mygameshelf.presentation.common.NetworkImage
 import com.example.mygameshelf.presentation.common.StarRatingBar
 
 @Composable
-fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(),
-                onClickAdd: () -> Unit,
-                onClickGame: (Long) -> Unit) {
+fun ShelfScreen(
+    viewModel: ShelfViewModel = hiltViewModel(),
+    onClickAdd: () -> Unit,
+    onClickGame: (Long) -> Unit
+) {
     val wantToPlayGames by viewModel.wantToPlayGames.collectAsStateWithLifecycle()
     val playingGames by viewModel.playingGames.collectAsStateWithLifecycle()
     val otherGames by viewModel.otherGames.collectAsStateWithLifecycle()
@@ -91,26 +92,17 @@ fun ShelfScreen(viewModel: ShelfViewModel = hiltViewModel(),
             onClickGame = onClickGame,
             onLongPressedGame = onLongPressedGame
         )
-        Spacer(Modifier.weight(1f))
-
+        Spacer(modifier = Modifier.size(24.dp))
         Image(
             painter = painterResource(id = R.drawable.image_find),
             contentDescription = "Find game",
-            contentScale = ContentScale.FillBounds,
+            contentScale = ContentScale.Inside,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .size(160.dp)
-                .clickable (onClick = onClickAdd),
+                .weight(1f)
+                .clickable(onClick = onClickAdd),
         )
-//        CustomImageButton(
-//            modifier = Modifier
-//                .align(Alignment.CenterHorizontally)
-//                .padding(bottom = 12.dp),
-//            text = "Find game",
-//            onClick = onClickAdd
-//        )
     }
-
 }
 
 @Preview(showBackground = true)
