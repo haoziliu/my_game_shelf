@@ -64,7 +64,7 @@ fun CustomImageButton(
 
         // 4. 按钮文字
         Text(
-            modifier = Modifier.padding(start = 44.dp, end = 44.dp, top = 16.dp, bottom = 16.dp),
+            modifier = Modifier.padding(horizontal = 44.dp, vertical = 16.dp),
             text = text,
             color = Color(0xff663f13),
             fontSize = 12.sp,

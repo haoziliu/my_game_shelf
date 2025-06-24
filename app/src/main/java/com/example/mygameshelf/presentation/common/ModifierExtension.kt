@@ -137,7 +137,7 @@ fun SkeuomorphicImagePlate(
             ),
             textAlign = TextAlign.Center,
             fontSize = 14.sp,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 12.dp),
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
         )
     }
 }

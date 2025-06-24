@@ -20,6 +20,11 @@ data class Game(
 
 }
 
-enum class GameStatus {
-    WANT_TO_PLAY, PLAYING, ON_HOLD, PLAYED, DROPPED, UNKNOWN
+enum class GameStatus(val displayName: String) {
+    WANT_TO_PLAY("Want to Play"),
+    PLAYING("Playing"),
+    ON_HOLD("On Hold"),
+    PLAYED("Played"),
+    DROPPED("Dropped"),
+    UNKNOWN("Unknown")
 }

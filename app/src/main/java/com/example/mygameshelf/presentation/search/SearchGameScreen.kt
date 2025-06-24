@@ -54,7 +54,7 @@ fun SearchGameScreen(
         focusRequester.requestFocus()
     }
 
-    Column(Modifier.padding(start = 16.dp, end = 16.dp)) {
+    Column(Modifier.padding(horizontal = 16.dp)) {
         OutlinedTextField(
             value = searchText,
             onValueChange = { viewModel.onSearchTextChanged(it) },

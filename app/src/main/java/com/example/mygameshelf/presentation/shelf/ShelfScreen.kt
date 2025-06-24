@@ -116,14 +116,12 @@ fun Shelf(
     onClickGame: (Long) -> Unit = {},
     onLongPressedGame: (Game) -> Unit = {}
 ) {
-    val brassPlatePainter = painterResource(id = R.drawable.background_brass)
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SkeuomorphicImagePlate(
             modifier = Modifier,
-            painter = brassPlatePainter,
+            painter = painterResource(id = R.drawable.background_brass),
             text = title,
             textFontFamily = PixelFont,
             elevation = 2.dp,
@@ -224,7 +222,7 @@ fun GameItem(
                     Column(
                         modifier = Modifier
                             .width(180.dp)
-                            .padding(start = 8.dp, end = 8.dp)
+                            .padding(horizontal = 8.dp)
                             .onPlaced {
                                 barYPosition = it.size.height
                             }, horizontalAlignment = Alignment.Start

@@ -1,10 +1,12 @@
 package com.example.mygameshelf.presentation.gamedetail
 
 import SkeuomorphicImagePlate
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -42,9 +45,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mygameshelf.R
 import com.example.mygameshelf.core.Utils
@@ -98,17 +104,28 @@ fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
                             viewModel.setRating(newRating)
                         })
                 }
-
-                GameStatus.entries.forEach { status ->
-                    if (status != GameStatus.UNKNOWN) {
+                Spacer(Modifier.height(20.dp))
+                FlowRow(modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+                ) {
+                    GameStatus.entries.filter { it != GameStatus.UNKNOWN }.forEach { status ->
+                        val isSelected = (status == editStatus)
                         Box(
                             modifier = Modifier
                                 .clickable { viewModel.setStatus(status) }
-                                .padding(vertical = 12.dp)
+                                // 方案：为选中的按钮添加一个醒目的边框
+                                .border(
+                                    width = if (isSelected) 2.dp else 0.dp,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .padding(2.dp) // 让边框和内容之间有点距离
                         ) {
-                            Text(
-                                text = status.name,
-                                color = if (status == editStatus) MaterialTheme.colorScheme.primary else Color.Gray
+                            SkeuomorphicImagePlate(
+                                painter = painterResource(id = R.drawable.background_brass),
+                                text = status.displayName,
+                                elevation = 2.dp,
                             )
                         }
                     }
@@ -165,7 +182,7 @@ fun GameDetail(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp)
+            .padding(horizontal = 16.dp)
             .verticalScroll(scrollState)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
@@ -179,21 +196,20 @@ fun GameDetail(
                 Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
             }
         }
-        Spacer(Modifier.size(16.dp))
-        val brassPlatePainter = painterResource(id = R.drawable.background_brass)
-        SkeuomorphicImagePlate(
-            modifier = Modifier.wrapContentSize().align(Alignment.CenterHorizontally),
-            painter = brassPlatePainter,
-            text = game.title,
-            elevation = 2.dp
+        Text(
+            game.title,
+            fontFamily = FontFamily.Serif,
+            fontSize = 16.sp,
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.CenterHorizontally),
+            textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.size(16.dp))
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onClickEdit)
-                .padding(top = 12.dp, bottom = 12.dp),
+                .padding(vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier) {
@@ -210,7 +226,12 @@ fun GameDetail(
             }
             Spacer(Modifier.weight(1f))
             if (game.status != GameStatus.UNKNOWN) {
-                Text(game.status.name)
+                SkeuomorphicImagePlate(
+                    modifier = Modifier.wrapContentSize(),
+                    painter = painterResource(id = R.drawable.background_brass),
+                    text = game.status.displayName,
+                    elevation = 2.dp
+                )
             }
         }
 
