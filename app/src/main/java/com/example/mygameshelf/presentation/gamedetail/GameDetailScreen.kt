@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -43,6 +44,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -56,6 +58,7 @@ import com.example.mygameshelf.R
 import com.example.mygameshelf.core.Utils
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.domain.model.GameStatus
+import com.example.mygameshelf.presentation.common.ArtworkGallery
 import com.example.mygameshelf.presentation.common.GamePreviewParameterProvider
 import com.example.mygameshelf.presentation.common.NetworkImage
 import com.example.mygameshelf.presentation.common.StarRatingBar
@@ -76,11 +79,16 @@ fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
             newValue != SheetValue.Hidden || !hasChangesState
         }
     )
+    var showGallery by remember { mutableStateOf(false) }
+    var selectedArtworkIndex by remember { mutableStateOf(0) }
 
     gameDetail?.let { game ->
         GameDetail(game, onClickEdit = {
             showEdit = true
-        }, onBack = onBack)
+        }, onBack = onBack, onClickArtwork = { index ->
+            showGallery = true
+            selectedArtworkIndex = index
+        })
     } ?: run {
         Box(Modifier.fillMaxSize()) {
             CircularProgressIndicator(Modifier.align(Alignment.Center))
@@ -105,8 +113,12 @@ fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
                         })
                 }
                 Spacer(Modifier.height(20.dp))
-                FlowRow(modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(
+                        8.dp,
+                        Alignment.CenterHorizontally
+                    ),
                     verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
                 ) {
                     GameStatus.entries.filter { it != GameStatus.UNKNOWN }.forEach { status ->
@@ -169,6 +181,14 @@ fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
         )
     }
 
+    if (showGallery && gameDetail?.artworksId?.isNotEmpty() == true) {
+        ArtworkGallery(
+            artworks = gameDetail!!.artworksId!!,
+            initialIndex = selectedArtworkIndex,
+            onDismiss = { showGallery = false }
+        )
+    }
+
 }
 
 @Composable
@@ -177,6 +197,7 @@ fun GameDetail(
     @PreviewParameter(GamePreviewParameterProvider::class) game: Game,
     onClickEdit: () -> Unit = {},
     onBack: () -> Unit = {},
+    onClickArtwork: (Int) -> Unit = {},
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -191,6 +212,7 @@ fun GameDetail(
                 modifier = Modifier
                     .size(width = 220.dp, height = 293.dp)
                     .align(Alignment.Center)
+                    .shadow(elevation = 4.dp)
             )
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
@@ -253,13 +275,14 @@ fun GameDetail(
             Spacer(Modifier.size(16.dp))
             Text("Artworks:")
             LazyRow {
-                items(artworksId, key = { it }) { imageId ->
+                itemsIndexed(artworksId) { index, imageId ->
                     NetworkImage(
                         url = Utils.screenshotBigUrl(imageId) ?: "",
                         modifier = Modifier
                             .width(256.dp)
                             .height(144.dp)
                             .padding(4.dp)
+                            .clickable(onClick = { onClickArtwork(index) })
                     )
                 }
             }

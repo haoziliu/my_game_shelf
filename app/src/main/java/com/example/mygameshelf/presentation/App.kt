@@ -2,6 +2,7 @@ package com.example.mygameshelf.presentation
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -27,7 +28,7 @@ fun App() {
         modifier = Modifier
             .fillMaxSize()
             .noiseBackground(
-                baseColor = Color(0xFFB2AC88),
+                baseColor = MaterialTheme.colorScheme.background,
                 noiseColor = Color.Black.copy(alpha = 0.4f),
                 noiseDensity = 0.08f
             ),

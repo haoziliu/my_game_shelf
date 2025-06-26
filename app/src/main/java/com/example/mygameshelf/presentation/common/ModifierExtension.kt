@@ -127,7 +127,7 @@ fun SkeuomorphicImagePlate(
         Text(
             text = text,
             fontFamily = textFontFamily,
-            color = Color(0xFF4C3D21).copy(alpha = 0.9f),
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f),
             style = MaterialTheme.typography.bodyLarge.copy(
                 shadow = Shadow(
                     color = Color.White.copy(alpha = 0.5f),

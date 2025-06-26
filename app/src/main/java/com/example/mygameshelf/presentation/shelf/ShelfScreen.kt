@@ -239,7 +239,7 @@ fun GameItem(
         }
         NetworkImage(
             url = Utils.coverBigUrl(game.imageId) ?: "",
-            modifier = Modifier.size(width = 90.dp, height = 120.dp)
+            modifier = Modifier.size(width = 90.dp, height = 120.dp).shadow(elevation = 4.dp)
         )
 //        Column (
 //            modifier = Modifier

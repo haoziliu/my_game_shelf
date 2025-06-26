@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
@@ -103,7 +104,7 @@ fun GameRow(
     ) {
         NetworkImage(
             url = Utils.coverSmallUrl(game.imageId) ?: "",
-            modifier = Modifier.size(width = 54.dp, height = 72.dp)
+            modifier = Modifier.size(width = 54.dp, height = 72.dp).shadow(elevation = 4.dp)
         )
         Spacer(Modifier.width(16.dp))
         Text(modifier = Modifier.align(Alignment.CenterVertically), text = game.title)

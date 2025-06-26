@@ -17,14 +17,14 @@ fun NetworkImage(
     contentDescription: String? = null,
     contentScale: ContentScale = ContentScale.Crop,
     placeholder: Painter? = null,
-    error: Painter? = null
+    error: Painter? = null,
 ) {
     val imageModel = url.ifBlank { null }
 
     AsyncImage(
         model = imageModel,
         contentDescription = contentDescription,
-        modifier = modifier.shadow(elevation = 4.dp),
+        modifier = modifier,
         contentScale = contentScale,
 //        placeholder = placeholder ?: painterResource(R.drawable.placeholder), // ✅ 占位图
 //        error = error ?: painterResource(R.drawable.error_placeholder) // ✅ 错误图
