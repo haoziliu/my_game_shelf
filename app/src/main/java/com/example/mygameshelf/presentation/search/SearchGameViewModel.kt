@@ -8,12 +8,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,26 +25,22 @@ class SearchGameViewModel @Inject constructor(
 ) : ViewModel() {
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText.asStateFlow()
-    private val _games = MutableStateFlow<List<Game>>(listOf())
-    val games = _games.asStateFlow()
+    val games = _searchText.debounce(500)
+        .filter { it.length > 2 }
+        .distinctUntilChanged()
+        .flatMapLatest { text ->
+            flow {
+                searchGamesUseCase(text)
+                    .onSuccess { emit(it) }
+                    .onFailure { emit(emptyList<Game>()) }
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 //    private val _loading = MutableStateFlow(false)
 //    val loading = _loading.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            _searchText.debounce(500)
-                .filter { it.length > 2 }
-                .distinctUntilChanged()
-                .catch { _games.value = emptyList() }
-                .collect{ query ->
-                    searchGamesUseCase(query).onSuccess {
-                        _games.value = it
-                    }.onFailure {
-                        it.printStackTrace()
-                    }
-                }
-        }
-    }
 
     fun onSearchTextChanged(newText: String) {
         _searchText.value = newText

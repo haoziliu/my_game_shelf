@@ -12,8 +12,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -27,10 +29,31 @@ class GameDetailViewModel @Inject constructor(
     private val saveGameUseCase: SaveGameUseCase,
 ) : ViewModel() {
     private val igdbId: Long = checkNotNull(savedStateHandle.get<String>("igdbId")).toLong()
-    val localGame = observeLocalGameUseCase.byIgdbId(igdbId)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(1_000), null)
-    private val _gameDetail = MutableStateFlow<Game?>(null)
-    val gameDetail = _gameDetail.asStateFlow()
+    private val localGameFlow = observeLocalGameUseCase.byIgdbId(igdbId)
+    private val remoteGameFlow = flow {
+        emit(fetchRemoteGameUseCase(igdbId).onFailure { it.printStackTrace() })
+    }
+    val gameDetail = combine(
+        remoteGameFlow,
+        localGameFlow
+    ) { remoteResult, localGame ->
+        val remoteGame = remoteResult.getOrNull() ?: return@combine localGame
+        if (localGame == null) {
+            remoteGame
+        } else {
+            remoteGame.copy(
+                id = localGame.id,
+                myRating = localGame.myRating,
+                status = localGame.status,
+                lastEdit = localGame.lastEdit,
+            )
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = null,
+    )
+
     private val _hasUnsavedChanges = MutableStateFlow(false)
     val hasUnsavedChanges = _hasUnsavedChanges.asStateFlow()
     private val _editMyRating = MutableStateFlow<Float?>(null)
@@ -40,22 +63,9 @@ class GameDetailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            fetchRemoteGameUseCase(igdbId).onSuccess {
-                _gameDetail.value = it
-            }.onFailure {
-                it.printStackTrace()
-            }
-            localGame.filterNotNull().first().let { g ->
+            gameDetail.filterNotNull().first().let { g ->
                 _editMyRating.value = g.myRating ?: 0.0f
                 _editStatus.value = g.status
-                val currentDetail = _gameDetail.value
-                if (currentDetail != null) {
-                    _gameDetail.value = currentDetail.copy(
-                        myRating = g.myRating,
-                        status = g.status,
-                        lastEdit = g.lastEdit,
-                    )
-                }
             }
         }
     }
@@ -71,33 +81,25 @@ class GameDetailViewModel @Inject constructor(
     }
 
     fun saveChanges() {
-        val current = localGame.value ?: Game(
+        val currentDetail = gameDetail.value ?: return
+        val updated = Game(
+            id = currentDetail.id,
             igdbId = igdbId,
-            title = _gameDetail.value?.title ?: "",
-            imageId = _gameDetail.value?.imageId
-        )
-        val newRating = _editMyRating.value ?: current.myRating
-        val newStatus = _editStatus.value ?: current.status
-
-        val updated = current.copy(
-            myRating = newRating,
-            status = newStatus,
+            title = currentDetail.title,
+            imageId = currentDetail.imageId,
+            myRating = _editMyRating.value,
+            status = _editStatus.value ?: GameStatus.UNKNOWN,
             lastEdit = LocalDateTime.now()
         )
         viewModelScope.launch {
             saveGameUseCase(updated)
             _hasUnsavedChanges.value = false
         }
-        _gameDetail.value = _gameDetail.value!!.copy(
-            myRating = updated.myRating,
-            status = updated.status,
-            lastEdit = updated.lastEdit,
-        )
     }
 
     fun resetEdits() {
-        _editMyRating.value = localGame.value?.myRating ?: 0.0f
-        _editStatus.value = localGame.value?.status ?: GameStatus.UNKNOWN
+        _editMyRating.value = gameDetail.value?.myRating ?: 0.0f
+        _editStatus.value = gameDetail.value?.status ?: GameStatus.UNKNOWN
         _hasUnsavedChanges.value = false
     }
 
