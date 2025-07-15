@@ -1,9 +1,8 @@
-package com.example.mygameshelf.domian.usecase
+package com.example.mygameshelf.domain.usecase
 
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.domain.model.GameStatus
 import com.example.mygameshelf.domain.repository.GameRepository
-import com.example.mygameshelf.domain.usecase.SaveGameUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.impl.annotations.MockK
@@ -20,6 +19,7 @@ class SaveGameUseCaseTest {
 
     @MockK
     private lateinit var repository: GameRepository
+
     private lateinit var saveGameUseCase: SaveGameUseCase
 
     @Before
@@ -37,8 +37,8 @@ class SaveGameUseCaseTest {
             lastEdit = LocalDateTime.now()
         )
         coEvery { repository.saveGame(any()) } returns Unit
-        saveGameUseCase(gameToSave)
 
+        saveGameUseCase(gameToSave)
         coVerify(exactly = 1) { repository.saveGame(gameToSave) }
     }
 

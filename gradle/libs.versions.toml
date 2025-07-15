@@ -20,6 +20,7 @@ logginginterceptor = "4.12.0"
 coil = "2.4.0"
 datastore = "1.1.7"
 truth = "1.4.2"
+turbine = "1.1.0"
 uiTextGoogleFonts = "1.8.2"
 
 [libraries]
@@ -69,6 +70,7 @@ logging-interceptor = { group="com.squareup.okhttp3", name="logging-interceptor"
 # Image
 coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 androidx-datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

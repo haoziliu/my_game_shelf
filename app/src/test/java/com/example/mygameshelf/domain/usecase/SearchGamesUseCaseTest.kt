@@ -1,8 +1,7 @@
-package com.example.mygameshelf.domian.usecase
+package com.example.mygameshelf.domain.usecase
 
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.domain.repository.GameRepository
-import com.example.mygameshelf.domain.usecase.SearchGamesUseCase
 import com.google.common.truth.Truth
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -32,7 +31,7 @@ class SearchGamesUseCaseTest {
         val query = "witcher"
         val expectedGames = listOf(Game(title = "The Witcher 3"), Game(title = "The Witcher 2"))
         val expectedResult = Result.success(expectedGames)
-        coEvery { searchGamesUseCase(query) } returns expectedResult
+        coEvery { repository.searchRemoteGames(query) } returns expectedResult
 
         val actualResult = searchGamesUseCase(query)
         Truth.assertThat(actualResult).isEqualTo(expectedResult)
@@ -44,7 +43,7 @@ class SearchGamesUseCaseTest {
         val query = "some game"
         val exception = RuntimeException("Network error")
         val expectedResult = Result.failure<List<Game>>(exception)
-        coEvery { searchGamesUseCase(query) } returns expectedResult
+        coEvery { repository.searchRemoteGames(query) } returns expectedResult
 
         val actualResult = searchGamesUseCase(query)
         Truth.assertThat(actualResult.isFailure).isTrue()
