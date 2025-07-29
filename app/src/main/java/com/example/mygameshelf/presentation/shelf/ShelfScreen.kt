@@ -61,9 +61,6 @@ fun ShelfScreen(
     val wantToPlayGames by viewModel.wantToPlayGames.collectAsStateWithLifecycle()
     val playingGames by viewModel.playingGames.collectAsStateWithLifecycle()
     val otherGames by viewModel.otherGames.collectAsStateWithLifecycle()
-    val onLongPressedGame: (Game) -> Unit = { game ->
-        viewModel.deleteGame(game)
-    }
     val scrollState = rememberScrollState()
 
     Column(
@@ -76,7 +73,6 @@ fun ShelfScreen(
             "Want to play",
             onClickAdd = onClickAdd,
             onClickGame = onClickGame,
-            onLongPressedGame = onLongPressedGame
         )
         Spacer(modifier = Modifier.size(36.dp))
         Shelf(
@@ -84,7 +80,6 @@ fun ShelfScreen(
             "Playing",
             onClickAdd = onClickAdd,
             onClickGame = onClickGame,
-            onLongPressedGame = onLongPressedGame
         )
         Spacer(modifier = Modifier.size(36.dp))
         Shelf(
@@ -92,7 +87,6 @@ fun ShelfScreen(
             "Finished",
             onClickAdd = onClickAdd,
             onClickGame = onClickGame,
-            onLongPressedGame = onLongPressedGame
         )
         Spacer(modifier = Modifier.size(24.dp))
         Image(
@@ -114,7 +108,6 @@ fun Shelf(
     title: String = "Shelf title",
     onClickAdd: () -> Unit = {},
     onClickGame: (Long) -> Unit = {},
-    onLongPressedGame: (Game) -> Unit = {}
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
@@ -169,7 +162,6 @@ fun Shelf(
                         items(gameList, key = { it.id }) { game ->
                             GameItem(
                                 game = game,
-                                onLongPressed = onLongPressedGame,
                                 onClick = onClickGame
                             )
                         }
@@ -185,7 +177,6 @@ fun Shelf(
 fun GameItem(
     @PreviewParameter(GamePreviewParameterProvider::class) game: Game,
     onClick: (Long) -> Unit = {},
-    onLongPressed: (Game) -> Unit = {}
 ) {
     var showTitleTooltip by remember { mutableStateOf(false) }
     var barYPosition by remember {
