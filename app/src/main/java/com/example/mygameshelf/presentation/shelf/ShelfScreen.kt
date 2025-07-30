@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -96,7 +97,8 @@ fun ShelfScreen(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .weight(1f)
-                .clickable(onClick = onClickAdd),
+                .clickable(onClick = onClickAdd)
+                .testTag("NavigateToSearchButton"),
         )
     }
 }
