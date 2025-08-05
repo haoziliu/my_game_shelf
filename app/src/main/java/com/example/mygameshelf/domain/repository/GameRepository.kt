@@ -12,6 +12,11 @@ interface GameRepository {
     suspend fun getLocalGameByIgdbId(igdbId: Long): Game?
     fun observeLocalGameById(id: Long): Flow<Game?>
     fun observeLocalGameByIgdbId(igdbId: Long): Flow<Game?>
-    suspend fun searchRemoteGames(searchText: String): Result<List<Game>>
+    suspend fun searchRemoteGames(
+        searchText: String,
+        take: Int? = 10,
+        offset: Int? = 0
+    ): Result<List<Game>>
+
     suspend fun fetchGameFromRemote(igdbId: Long): Result<Game>
 }

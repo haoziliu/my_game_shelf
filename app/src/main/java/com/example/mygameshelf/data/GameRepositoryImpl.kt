@@ -43,8 +43,12 @@ class GameRepositoryImpl @Inject constructor(
     override fun observeLocalGameByIgdbId(igdbId: Long): Flow<Game?> =
         gameDao.observeGameByIgdbId(igdbId).map { it?.toDomainModel() }
 
-    override suspend fun searchRemoteGames(searchText: String): Result<List<Game>> {
-        val rawQuery = "fields name,cover.image_id; limit 10; search \"$searchText\";"
+    override suspend fun searchRemoteGames(
+        searchText: String,
+        take: Int?,
+        offset: Int?
+    ): Result<List<Game>> {
+        val rawQuery = "fields name,cover.image_id; limit $take; offset $offset; search \"$searchText\";"
         return runCatching {
             val response = ApiHelper.call {
                 gameApi.games(

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
@@ -22,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -40,6 +42,10 @@ import com.example.mygameshelf.core.Utils
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.presentation.common.NetworkImage
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun SearchGameScreen(
@@ -49,7 +55,10 @@ fun SearchGameScreen(
 ) {
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
     val games by viewModel.games.collectAsStateWithLifecycle()
+    val isLoading by viewModel.loading.collectAsStateWithLifecycle()
+    val hasMore by viewModel.hasMoreData.collectAsStateWithLifecycle()
     val focusRequester = remember { FocusRequester() }
+    val listState = rememberLazyListState()
 
     LaunchedEffect(Unit) {
         delay(100)
@@ -80,11 +89,25 @@ fun SearchGameScreen(
         if (games.isEmpty()) {
             Text("No games matching!", modifier = Modifier.align(Alignment.CenterHorizontally))
         }
-        LazyColumn {
+        LazyColumn(state = listState) {
             items(games) { game ->
                 GameRow(game, onClick = { onClickGame(game.igdbId!!) })
             }
         }
+    }
+
+    LaunchedEffect(listState, hasMore) {
+        snapshotFlow { listState.layoutInfo }
+            .map { it.visibleItemsInfo.lastOrNull()?.index }
+            .filter { it != null }
+            .distinctUntilChanged()
+            .filter { index ->
+                val totalCount = listState.layoutInfo.totalItemsCount
+                index != null && index >= totalCount - 3 && !isLoading && hasMore
+            }
+            .collect {
+                viewModel.loadMore()
+            }
     }
 }
 
@@ -106,7 +129,9 @@ fun GameRow(
     ) {
         NetworkImage(
             url = Utils.coverSmallUrl(game.imageId) ?: "",
-            modifier = Modifier.size(width = 54.dp, height = 72.dp).shadow(elevation = 4.dp)
+            modifier = Modifier
+                .size(width = 54.dp, height = 72.dp)
+                .shadow(elevation = 4.dp)
         )
         Spacer(Modifier.width(16.dp))
         Text(modifier = Modifier.align(Alignment.CenterVertically), text = game.title)
