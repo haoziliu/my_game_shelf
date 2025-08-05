@@ -1,5 +1,6 @@
 package com.example.mygameshelf.domain.usecase
 
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.domain.repository.GameRepository
 import com.google.common.truth.Truth
@@ -49,5 +50,28 @@ class SearchGamesUseCaseTest {
         Truth.assertThat(actualResult.isFailure).isTrue()
         Truth.assertThat(actualResult.exceptionOrNull()).isEqualTo(exception)
         coVerify(exactly = 1) { repository.searchRemoteGames(query) }
+    }
+
+    @Test
+    fun `search pagination should work well`() = runTest {
+        val query = "witcher"
+        val page1Games = mutableListOf<Game>()
+        repeat(5) {
+            page1Games += Game(title = "witcher 1-$it")
+        }
+        val page2Games = mutableListOf<Game>()
+        repeat(5) {
+            page2Games += Game(title = "witcher 2-$it")
+        }
+        val expectedPage1Result = Result.success(page1Games)
+        val expectedPage2Result = Result.success(page1Games)
+        coEvery { repository.searchRemoteGames(query, 5, 0) } returns expectedPage1Result
+        coEvery { repository.searchRemoteGames(query, 5, 5) } returns expectedPage2Result
+
+        val actualPage1Result = searchGamesUseCase(query, 5, 0)
+        Truth.assertThat(actualPage1Result).isEqualTo(expectedPage1Result)
+        val actualPage2Result = searchGamesUseCase(query, 5, 5)
+        Truth.assertThat(actualPage2Result).isEqualTo(expectedPage2Result)
+        coVerify(exactly = 2) { repository.searchRemoteGames(any(), any(), any()) }
     }
 }
