@@ -42,7 +42,6 @@ import com.example.mygameshelf.core.Utils
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.presentation.common.NetworkImage
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -53,10 +52,7 @@ fun SearchGameScreen(
     onClickGame: (Long) -> Unit,
     onBack: () -> Unit
 ) {
-    val searchText by viewModel.searchText.collectAsStateWithLifecycle()
-    val games by viewModel.games.collectAsStateWithLifecycle()
-    val isLoading by viewModel.loading.collectAsStateWithLifecycle()
-    val hasMore by viewModel.hasMoreData.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val focusRequester = remember { FocusRequester() }
     val listState = rememberLazyListState()
 
@@ -67,7 +63,7 @@ fun SearchGameScreen(
 
     Column(Modifier.padding(horizontal = 16.dp)) {
         OutlinedTextField(
-            value = searchText,
+            value = uiState.searchText,
             onValueChange = { viewModel.onSearchTextChanged(it) },
             leadingIcon = {
                 IconButton(onClick = onBack) {
@@ -86,24 +82,24 @@ fun SearchGameScreen(
                 .testTag("SearchTextField"),
         )
         Spacer(Modifier.height(16.dp))
-        if (games.isEmpty()) {
+        if (uiState.games.isEmpty()) {
             Text("No games matching!", modifier = Modifier.align(Alignment.CenterHorizontally))
         }
         LazyColumn(state = listState) {
-            items(games) { game ->
+            items(uiState.games) { game ->
                 GameRow(game, onClick = { onClickGame(game.igdbId!!) })
             }
         }
     }
 
-    LaunchedEffect(listState, hasMore) {
+    LaunchedEffect(listState, uiState) {
         snapshotFlow { listState.layoutInfo }
             .map { it.visibleItemsInfo.lastOrNull()?.index }
             .filter { it != null }
             .distinctUntilChanged()
             .filter { index ->
                 val totalCount = listState.layoutInfo.totalItemsCount
-                index != null && index >= totalCount - 3 && !isLoading && hasMore
+                index != null && index >= totalCount - 3 && !uiState.isLoading && uiState.hasMoreData
             }
             .collect {
                 viewModel.loadMore()
