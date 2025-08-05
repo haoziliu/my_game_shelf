@@ -92,7 +92,7 @@ fun SearchGameScreen(
         }
     }
 
-    LaunchedEffect(listState, uiState) {
+    LaunchedEffect(listState) {
         snapshotFlow { listState.layoutInfo }
             .map { it.visibleItemsInfo.lastOrNull()?.index }
             .filter { it != null }
