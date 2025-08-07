@@ -39,11 +39,14 @@ class SearchGameViewModelTest {
         val expectedGames = listOf(Game(title = "The Witcher 3"), Game(title = "The Witcher 2"))
         coEvery { searchGamesUseCase(query) } returns Result.success(expectedGames)
 
-        searchGameViewModel.games.test {
-            Truth.assertThat(awaitItem()).isEmpty()
+        searchGameViewModel.uiState.test {
+            Truth.assertThat(awaitItem().games).isEmpty()
             searchGameViewModel.onSearchTextChanged(query)
+            Truth.assertThat(awaitItem().searchText).isEqualTo(query)
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(501)
-            Truth.assertThat(awaitItem()).isEqualTo(expectedGames)
+            val resultState = awaitItem()
+            Truth.assertThat(resultState.isLoading).isFalse()
+            Truth.assertThat(resultState.games).isEqualTo(expectedGames)
             coVerify(exactly = 1) { searchGamesUseCase(query) }
             cancelAndIgnoreRemainingEvents()
         }
@@ -51,12 +54,14 @@ class SearchGameViewModelTest {
 
     @Test
     fun `short input should not trigger search`() = runTest {
-        searchGameViewModel.games.test {
-            Truth.assertThat(awaitItem()).isEmpty()
+        searchGameViewModel.uiState.test {
+            Truth.assertThat(awaitItem().games).isEmpty()
             searchGameViewModel.onSearchTextChanged("w")
+            Truth.assertThat(awaitItem().searchText).isEqualTo("w")
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(501)
             expectNoEvents()
             searchGameViewModel.onSearchTextChanged("wi")
+            Truth.assertThat(awaitItem().searchText).isEqualTo("wi")
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(501)
             expectNoEvents()
             coVerify(exactly = 0) { searchGamesUseCase(any()) }
@@ -70,16 +75,18 @@ class SearchGameViewModelTest {
         val expectedGames2 = listOf(Game(title = "The Witcher 3"))
         coEvery { searchGamesUseCase(query2) } returns Result.success(expectedGames2)
 
-        searchGameViewModel.games.test {
-            Truth.assertThat(awaitItem()).isEmpty()
+        searchGameViewModel.uiState.test {
+            Truth.assertThat(awaitItem().games).isEmpty()
             searchGameViewModel.onSearchTextChanged(query1)
+            Truth.assertThat(awaitItem().searchText).isEqualTo(query1)
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(400)
             expectNoEvents()
             searchGameViewModel.onSearchTextChanged(query2)
+            Truth.assertThat(awaitItem().searchText).isEqualTo(query2)
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(400)
             expectNoEvents()
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(101)
-            Truth.assertThat(awaitItem()).isEqualTo(expectedGames2)
+            Truth.assertThat(awaitItem().games).isEqualTo(expectedGames2)
             coVerify(exactly = 0) { searchGamesUseCase(query1) }
             coVerify(exactly = 1) { searchGamesUseCase(query2) }
             cancelAndIgnoreRemainingEvents()
@@ -95,14 +102,16 @@ class SearchGameViewModelTest {
         val exception = RuntimeException("Network error")
         coEvery { searchGamesUseCase(query2) } returns Result.failure(exception)
 
-        searchGameViewModel.games.test {
-            Truth.assertThat(awaitItem()).isEmpty()
+        searchGameViewModel.uiState.test {
+            Truth.assertThat(awaitItem().games).isEmpty()
             searchGameViewModel.onSearchTextChanged(query)
+            Truth.assertThat(awaitItem().searchText).isEqualTo(query)
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(501)
-            Truth.assertThat(awaitItem()).isEqualTo(expectedGames)
+            Truth.assertThat(awaitItem().games).isEqualTo(expectedGames)
             searchGameViewModel.onSearchTextChanged(query2)
+            Truth.assertThat(awaitItem().searchText).isEqualTo(query2)
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(501)
-            Truth.assertThat(awaitItem()).isEmpty()
+            Truth.assertThat(awaitItem().games).isEmpty()
             coVerify(exactly = 2) { searchGamesUseCase(any()) }
             cancelAndIgnoreRemainingEvents()
         }

@@ -38,7 +38,7 @@ class SearchGameViewModel @Inject constructor(
                     val newList = searchGamesUseCase(
                         text,
                         PAGE_SIZE,
-                        paginationOffset
+                        0
                     ).getOrDefault(emptyList())
                     paginationOffset = newList.size
                     _uiState.update {
