@@ -1,5 +1,7 @@
 package com.example.mygameshelf.presentation.search
 
+import androidx.paging.PagingSource
+import androidx.paging.testing.asSnapshot
 import app.cash.turbine.test
 import com.example.mygameshelf.MainDispatcherRule
 import com.example.mygameshelf.domain.model.Game
@@ -36,32 +38,26 @@ class SearchGameViewModelTest {
     @Test
     fun `search with debounce should return result`() = runTest {
         val query = "witcher"
-        val expectedGames = listOf(Game(title = "The Witcher 3"), Game(title = "The Witcher 2"))
-        coEvery { searchGamesUseCase(query) } returns Result.success(expectedGames)
+        val expectedGames = listOf(
+            Game(igdbId = 101L, title = "The Witcher 3"),
+            Game(igdbId = 102L, title = "The Witcher 2")
+        )
+        coEvery { searchGamesUseCase(query, any(), 0) } returns Result.success(expectedGames)
 
-        searchGameViewModel.uiState.test {
-            Truth.assertThat(awaitItem().games).isEmpty()
-            searchGameViewModel.onSearchTextChanged(query)
-            Truth.assertThat(awaitItem().searchText).isEqualTo(query)
-            mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(501)
-            val resultState = awaitItem()
-            Truth.assertThat(resultState.isLoading).isFalse()
-            Truth.assertThat(resultState.games).isEqualTo(expectedGames)
-            coVerify(exactly = 1) { searchGamesUseCase(query) }
-            cancelAndIgnoreRemainingEvents()
-        }
+        searchGameViewModel.onSearchTextChanged(query)
+        mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(501)
+        val resultList = searchGameViewModel.games.asSnapshot()
+        Truth.assertThat(resultList).isEqualTo(expectedGames)
+        coVerify(exactly = 1) { searchGamesUseCase(query, any(), 0) }
     }
 
     @Test
     fun `short input should not trigger search`() = runTest {
-        searchGameViewModel.uiState.test {
-            Truth.assertThat(awaitItem().games).isEmpty()
+        searchGameViewModel.games.test {
             searchGameViewModel.onSearchTextChanged("w")
-            Truth.assertThat(awaitItem().searchText).isEqualTo("w")
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(501)
             expectNoEvents()
             searchGameViewModel.onSearchTextChanged("wi")
-            Truth.assertThat(awaitItem().searchText).isEqualTo("wi")
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(501)
             expectNoEvents()
             coVerify(exactly = 0) { searchGamesUseCase(any()) }
@@ -72,47 +68,46 @@ class SearchGameViewModelTest {
     fun `bounce input should only trigger newest`() = runTest {
         val query1 = "witcher"
         val query2 = "witcher 3"
-        val expectedGames2 = listOf(Game(title = "The Witcher 3"))
-        coEvery { searchGamesUseCase(query2) } returns Result.success(expectedGames2)
+        val expectedGames2 = listOf(Game(igdbId = 101L, title = "The Witcher 3"))
+        coEvery { searchGamesUseCase(query2, any(), 0) } returns Result.success(expectedGames2)
 
-        searchGameViewModel.uiState.test {
-            Truth.assertThat(awaitItem().games).isEmpty()
+        searchGameViewModel.games.test {
             searchGameViewModel.onSearchTextChanged(query1)
-            Truth.assertThat(awaitItem().searchText).isEqualTo(query1)
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(400)
             expectNoEvents()
             searchGameViewModel.onSearchTextChanged(query2)
-            Truth.assertThat(awaitItem().searchText).isEqualTo(query2)
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(400)
             expectNoEvents()
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(101)
-            Truth.assertThat(awaitItem().games).isEqualTo(expectedGames2)
-            coVerify(exactly = 0) { searchGamesUseCase(query1) }
-            coVerify(exactly = 1) { searchGamesUseCase(query2) }
+            mainDispatcherRule.testDispatcher.scheduler.runCurrent()
+            val resultList = searchGameViewModel.games.asSnapshot()
+            Truth.assertThat(resultList).isEqualTo(expectedGames2)
+            coVerify(exactly = 0) { searchGamesUseCase(query1, any(), any()) }
+            coVerify(exactly = 1) { searchGamesUseCase(query2, any(), 0) }
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `failed use case should return empty games`() = runTest{
+    fun `failed use case should return empty games`() = runTest {
         val query = "witcher"
-        val expectedGames = listOf(Game(title = "The Witcher 3"), Game(title = "The Witcher 2"))
-        coEvery { searchGamesUseCase(query) } returns Result.success(expectedGames)
+        val expectedGames = listOf(
+            Game(igdbId = 101L, title = "The Witcher 3"),
+            Game(igdbId = 102L, title = "The Witcher 2")
+        )
+        coEvery { searchGamesUseCase(query, any(), any()) } returns Result.success(expectedGames)
         val query2 = "witcher3"
         val exception = RuntimeException("Network error")
-        coEvery { searchGamesUseCase(query2) } returns Result.failure(exception)
+        coEvery { searchGamesUseCase(query2, any(), any()) } returns Result.failure(exception)
 
-        searchGameViewModel.uiState.test {
-            Truth.assertThat(awaitItem().games).isEmpty()
+        searchGameViewModel.games.test {
             searchGameViewModel.onSearchTextChanged(query)
-            Truth.assertThat(awaitItem().searchText).isEqualTo(query)
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(501)
-            Truth.assertThat(awaitItem().games).isEqualTo(expectedGames)
+            Truth.assertThat(searchGameViewModel.games.asSnapshot()).isEqualTo(expectedGames)
             searchGameViewModel.onSearchTextChanged(query2)
-            Truth.assertThat(awaitItem().searchText).isEqualTo(query2)
             mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(501)
-            Truth.assertThat(awaitItem().games).isEmpty()
-            coVerify(exactly = 2) { searchGamesUseCase(any()) }
+            Truth.assertThat(searchGameViewModel.games.asSnapshot()).isEmpty()
+            coVerify(exactly = 2) { searchGamesUseCase(any(), any(), any()) }
             cancelAndIgnoreRemainingEvents()
         }
     }

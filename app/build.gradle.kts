@@ -100,12 +100,17 @@ dependencies {
     // Image
     implementation(libs.coil)
 
+    // Paging
+    implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.paging.compose)
+
     // Unit Tests
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.truth)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
+    testImplementation(libs.androidx.paging.testing)
 
     // Instrumentation/UI Tests
     androidTestImplementation(libs.androidx.junit)
