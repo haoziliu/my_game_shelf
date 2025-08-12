@@ -11,6 +11,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navDeepLink
 import com.example.mygameshelf.presentation.gamedetail.GameDetailScreen
 import com.example.mygameshelf.presentation.gamedetail.GameDetailViewModel
 import com.example.mygameshelf.presentation.search.SearchGameScreen
@@ -57,9 +58,14 @@ fun App() {
                 }, onClickGame = onClickGame)
             }
             composable("searchGame") {
-                SearchGameScreen(onClickGame = onClickGame, onBack = { navController.popBackStack() })
+                SearchGameScreen(
+                    onClickGame = onClickGame,
+                    onBack = { navController.popBackStack() })
             }
-            composable("gameDetail/{igdbId}") { backStackEntry ->
+            composable(
+                route = "gameDetail/{igdbId}",
+                deepLinks = listOf(navDeepLink { uriPattern = "mygameshelf://gameDetail/{igdbId}" })
+            ) { backStackEntry ->
                 val detailVm: GameDetailViewModel = hiltViewModel(backStackEntry)
                 GameDetailScreen(detailVm, onBack = { navController.popBackStack() })
             }
