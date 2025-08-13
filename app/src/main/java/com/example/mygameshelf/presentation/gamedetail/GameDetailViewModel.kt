@@ -9,8 +9,10 @@ import com.example.mygameshelf.domain.usecase.FetchRemoteGameUseCase
 import com.example.mygameshelf.domain.usecase.ObserveLocalGameUseCase
 import com.example.mygameshelf.domain.usecase.SaveGameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
@@ -33,6 +35,10 @@ class GameDetailViewModel @Inject constructor(
     private val remoteGameFlow = flow {
         emit(fetchRemoteGameUseCase(igdbId).onFailure { it.printStackTrace() })
     }
+
+    private val _eventFlow = MutableSharedFlow<GameDetailUiEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
+
     val gameDetail = combine(
         remoteGameFlow,
         localGameFlow
@@ -94,6 +100,7 @@ class GameDetailViewModel @Inject constructor(
         viewModelScope.launch {
             saveGameUseCase(updated)
             _hasUnsavedChanges.value = false
+            _eventFlow.emit(GameDetailUiEvent.ShowToast("Update saved!"))
         }
     }
 

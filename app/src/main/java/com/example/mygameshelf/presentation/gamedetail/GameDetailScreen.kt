@@ -1,6 +1,7 @@
 package com.example.mygameshelf.presentation.gamedetail
 
 import SkeuomorphicImagePlate
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -53,7 +56,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.mygameshelf.R
 import com.example.mygameshelf.core.Utils
 import com.example.mygameshelf.domain.model.Game
@@ -62,11 +68,14 @@ import com.example.mygameshelf.presentation.common.ArtworkGallery
 import com.example.mygameshelf.presentation.common.GamePreviewParameterProvider
 import com.example.mygameshelf.presentation.common.NetworkImage
 import com.example.mygameshelf.presentation.common.StarRatingBar
+import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val gameDetail by viewModel.gameDetail.collectAsStateWithLifecycle()
     var showEdit by remember { mutableStateOf(false) }
     var showDiscardDialog by remember { mutableStateOf(false) }
@@ -189,6 +198,17 @@ fun GameDetailScreen(viewModel: GameDetailViewModel, onBack: () -> Unit) {
         )
     }
 
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.eventFlow.collect { event ->
+                when (event) {
+                    is GameDetailUiEvent.ShowToast -> {
+                        Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
