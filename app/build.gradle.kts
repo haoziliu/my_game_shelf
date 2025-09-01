@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.google.hilt)
+    alias(libs.plugins.apollo)
 }
 
 android {
@@ -96,6 +97,8 @@ dependencies {
     implementation(libs.retrofit.gson)
     implementation(libs.logging.interceptor)
     implementation(libs.androidx.datastore)
+    implementation(libs.apollo.client)
+    implementation(libs.apollo.normalized.cache)
 
     // Image
     implementation(libs.coil)
@@ -124,4 +127,10 @@ dependencies {
     // Debug Tools
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+apollo {
+    service("igdb") {
+        packageName.set("com.example.mygameshelf.graphql")
+    }
 }

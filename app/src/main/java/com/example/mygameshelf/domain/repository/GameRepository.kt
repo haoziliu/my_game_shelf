@@ -19,4 +19,9 @@ interface GameRepository {
     ): Result<List<Game>>
 
     suspend fun fetchGameFromRemote(igdbId: Long): Result<Game>
+    suspend fun searchRemoteGamesGraphQL(
+        searchText: String,
+        take: Int? = 10,
+        offset: Int? = 0
+    ): Result<List<Game>>
 }

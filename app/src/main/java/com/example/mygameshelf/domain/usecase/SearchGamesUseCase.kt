@@ -5,5 +5,6 @@ import javax.inject.Inject
 
 class SearchGamesUseCase @Inject constructor(private val repository: GameRepository) {
     suspend operator fun invoke(searchText: String, take: Int? = 10, offset: Int? = 0)
-        = repository.searchRemoteGames(searchText, take, offset)
+//        = repository.searchRemoteGames(searchText, take, offset)
+    = repository.searchRemoteGamesGraphQL(searchText, take, offset)
 }

@@ -5,6 +5,7 @@ import com.example.mygameshelf.data.local.dao.GameDao
 import com.example.mygameshelf.data.local.model.toDomainModel
 import com.example.mygameshelf.data.local.model.toEntity
 import com.example.mygameshelf.data.remote.api.GameApi
+import com.example.mygameshelf.data.remote.api.GameGraphQLApi
 import com.example.mygameshelf.data.remote.model.toDomainModel
 import com.example.mygameshelf.domain.model.Game
 import com.example.mygameshelf.domain.model.GameStatus
@@ -17,7 +18,8 @@ import javax.inject.Inject
 
 class GameRepositoryImpl @Inject constructor(
     private val gameDao: GameDao,
-    private val gameApi: GameApi
+    private val gameApi: GameApi,
+    private val gameGraphQLApi: GameGraphQLApi
 ) : GameRepository {
 
     override fun observeLocalGamesByStatus(vararg gameStatus: GameStatus): Flow<List<Game>> {
@@ -48,7 +50,8 @@ class GameRepositoryImpl @Inject constructor(
         take: Int?,
         offset: Int?
     ): Result<List<Game>> {
-        val rawQuery = "fields name,cover.image_id; limit $take; offset $offset; search \"$searchText\";"
+        val rawQuery =
+            "fields name,cover.image_id; limit $take; offset $offset; search \"$searchText\";"
         return runCatching {
             val response = ApiHelper.call {
                 gameApi.games(
@@ -60,7 +63,8 @@ class GameRepositoryImpl @Inject constructor(
     }
 
     override suspend fun fetchGameFromRemote(igdbId: Long): Result<Game> {
-        val rawQuery = "fields name,rating,cover.image_id,storyline,summary,artworks.image_id; limit 1; where id = $igdbId;"
+        val rawQuery =
+            "fields name,rating,cover.image_id,storyline,summary,artworks.image_id; limit 1; where id = $igdbId;"
         return runCatching {
             val response = ApiHelper.call {
                 gameApi.games(
@@ -68,6 +72,17 @@ class GameRepositoryImpl @Inject constructor(
                 )
             }
             response[0].toDomainModel()
+        }
+    }
+
+    override suspend fun searchRemoteGamesGraphQL(
+        searchText: String,
+        take: Int?,
+        offset: Int?
+    ): Result<List<Game>> {
+        return runCatching {
+            val response = gameGraphQLApi.searchGames(searchText, take, offset).getOrNull()
+            response?.map { it.toDomainModel() } ?: emptyList()
         }
     }
 }

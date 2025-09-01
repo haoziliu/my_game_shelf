@@ -1,0 +1,15 @@
+query SearchGames($searchText: String!, $limit: Int, $offset: Int) {
+	searchGames(searchText: $searchText, limit: $limit, offset: $offset) {
+		id
+		name
+		rating
+		summary
+		storyline
+		coverImage {
+			id
+		}
+		artworks {
+			id
+		}
+	}
+}

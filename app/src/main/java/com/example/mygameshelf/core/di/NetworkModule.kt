@@ -1,6 +1,8 @@
 package com.example.mygameshelf.core.di
 
 import android.util.Log
+import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.network.okHttpClient
 import com.example.mygameshelf.BuildConfig
 import com.example.mygameshelf.core.network.AuthInterceptor
 import com.example.mygameshelf.core.network.TokenAuthenticator
@@ -87,4 +89,12 @@ object NetworkModule {
         return retrofit.create(GameApi::class.java)
     }
 
+    @Provides
+    @Singleton
+    fun provideApolloClient(okHttpClient: OkHttpClient): ApolloClient {
+        return ApolloClient.Builder()
+            .serverUrl("https://api.igdb.com/v4/")
+            .okHttpClient(okHttpClient)
+            .build()
+    }
 }

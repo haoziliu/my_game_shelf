@@ -23,6 +23,7 @@ truth = "1.4.4"
 turbine = "1.2.1"
 uiTextGoogleFonts = "1.8.3"
 paging_version = "3.3.6"
+apollo = "4.0.0-beta.7"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -79,6 +80,10 @@ coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 androidx-datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
+# Apollo
+apollo-client = { group = "com.apollographql.apollo3", name = "apollo-runtime", version.ref = "apollo" }
+apollo-normalized-cache = { group = "com.apollographql.apollo3", name = "apollo-normalized-cache", version.ref = "apollo" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
@@ -86,4 +91,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt" }
 google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 google-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
-
+apollo = { id = "com.apollographql.apollo3", version.ref = "apollo"}

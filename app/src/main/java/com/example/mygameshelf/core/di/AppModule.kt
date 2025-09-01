@@ -13,6 +13,7 @@ import com.example.mygameshelf.data.local.dao.GameDao
 import com.example.mygameshelf.data.local.database.AppDatabase
 import com.example.mygameshelf.data.remote.api.AuthApi
 import com.example.mygameshelf.data.remote.api.GameApi
+import com.example.mygameshelf.data.remote.api.GameGraphQLApi
 import com.example.mygameshelf.domain.repository.GameRepository
 import com.example.mygameshelf.domain.repository.TokenRepository
 import dagger.Module
@@ -39,8 +40,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGameRepository(dao: GameDao, api: GameApi): GameRepository {
-        return GameRepositoryImpl(dao, api)
+    fun provideGameRepository(dao: GameDao, api: GameApi, gameGraphQLApi: GameGraphQLApi): GameRepository {
+        return GameRepositoryImpl(dao, api, gameGraphQLApi)
     }
 
     @Provides
