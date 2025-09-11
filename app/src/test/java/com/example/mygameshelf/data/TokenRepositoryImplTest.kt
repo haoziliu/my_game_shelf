@@ -57,4 +57,16 @@ class TokenRepositoryImplTest {
         coVerify(exactly = 1) { tokenStore.getToken() }
         coVerify(exactly = 0) { authApi.auth(any(), any()) }
     }
+
+    @Test
+    fun `fetch new token should save it`() = runTest {
+        val authResponse = AuthResponseDTO(accessToken = "abc", expiresIn = 1000, tokenType = "ttt")
+        coEvery { authApi.auth(any(), any(), any()) } returns Response.success(authResponse)
+        coEvery { tokenStore.saveToken(any(), any()) } returns Unit
+
+        val token = tokenRepositoryImpl.fetchAndSaveNewToken()
+        Truth.assertThat(token).isEqualTo(authResponse.accessToken)
+        coVerify(exactly = 1) { authApi.auth(any(), any()) }
+        coVerify(exactly = 1) { tokenStore.saveToken(authResponse.accessToken, authResponse.expiresIn) }
+    }
 }

@@ -3,6 +3,7 @@ package com.example.mygameshelf.core.di
 import android.util.Log
 import com.example.mygameshelf.BuildConfig
 import com.example.mygameshelf.core.network.AuthInterceptor
+import com.example.mygameshelf.core.network.TokenAuthenticator
 import com.example.mygameshelf.data.remote.api.AuthApi
 import com.example.mygameshelf.data.remote.api.GameApi
 import dagger.Module
@@ -40,31 +41,36 @@ object NetworkModule {
             )
             .build()
 
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(authInterceptor: AuthInterceptor,
+                            tokenAuthenticator: TokenAuthenticator): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
+            .authenticator(tokenAuthenticator)
+            .addInterceptor(HttpLoggingInterceptor { message ->
+                Log.d("IGDB-HTTP", message)
+            }.apply {
+                level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
+                else HttpLoggingInterceptor.Level.NONE
+            })
+            .addInterceptor(Interceptor { chain: Interceptor.Chain ->
+                val request = chain.request().newBuilder()
+                    .addHeader("Client-ID", BuildConfig.TWITCH_CLIENT_ID)
+                    .build()
+                chain.proceed(request)
+            })
+            .build()
+    }
 
     @Provides
     @Singleton
     @Named("ApiRetrofit")
-    fun provideRetrofit(authInterceptor: AuthInterceptor): Retrofit {
+    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://api.igdb.com/v4/")
             .addConverterFactory(GsonConverterFactory.create())
-            .client(
-                OkHttpClient.Builder()
-                    .addInterceptor(authInterceptor)
-                    .addInterceptor(HttpLoggingInterceptor { message ->
-                        Log.d("IGDB-HTTP", message)
-                    }.apply {
-                        level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
-                        else HttpLoggingInterceptor.Level.NONE
-                    })
-                    .addInterceptor(Interceptor { chain: Interceptor.Chain ->
-                        val request = chain.request().newBuilder()
-                            .addHeader("Client-ID", BuildConfig.TWITCH_CLIENT_ID)
-                            .build()
-                        chain.proceed(request)
-                    })
-                    .build()
-            )
+            .client(okHttpClient)
             .build()
     }
 
